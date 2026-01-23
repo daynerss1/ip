@@ -1,4 +1,10 @@
-package PACKAGE_NAME;
-
 public enum Commands {
+    LIST,
+    TODO,
+    DEADLINE,
+    EVENT,
+    MARK,
+    UNMARK,
+    DELETE,
+    BYE
 }

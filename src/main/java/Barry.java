@@ -88,7 +88,7 @@ public class Barry {
             Event newEvent = new Event(name, start, end);
             userList.add(newEvent);
             printAddedMessage(newEvent, userList.size());
-        } else if (input.equals("event") || input.equals("download") || input.equals("todo")) {
+        } else if (input.equals("event") || input.equals("deadline") || input.equals("todo")) {
             String classifier = input.equals("event") ? "an ": "a ";
             throw new BarryException("Oops! The description of " + classifier + input + " cannot be empty.");
         }
