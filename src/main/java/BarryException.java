@@ -1,4 +1,5 @@
-package PACKAGE_NAME;
-
-public class BarryException {
+public class BarryException extends Exception {
+    public BarryException(String msg) {
+        super(msg);
+    }
 }
