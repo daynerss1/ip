@@ -48,4 +48,9 @@ public class Barry {
             System.out.println((i + 1) + ". " + taskList.get(i).toString());
         }
     }
+
+    public static void printAddedMessage(Task task) {
+        System.out.println(DIVIDER + "\nGot it. I've added this task:\n" + task.toString());
+        System.out.println("Now you have " + userList.size() + " tasks in the list.\n" + DIVIDER);
+    }
 }
