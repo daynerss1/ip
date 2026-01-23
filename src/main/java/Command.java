@@ -1,4 +1,4 @@
-public enum Commands {
+public enum Command {
     LIST,
     TODO,
     DEADLINE,
