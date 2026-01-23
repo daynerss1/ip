@@ -43,6 +43,21 @@ public class Barry {
             } else {
                 throw new BarryException("You need to specify 1 or more tasks to " + op + ".");
             }
+        } else if (input.startsWith("delete")) {
+            String[] taskNums = input.split(" ");
+            if (taskNums.length > 1) {
+                System.out.println(DIVIDER);
+                for (int i = 1; i < taskNums.length; i++) {
+                    int number = Integer.parseInt(taskNums[i]);
+                    Task removedTask = userList.get(number - 1);
+                    userList.remove(number - 1);
+                    System.out.println("Noted. I've removed this task.");
+                    System.out.println(removedTask.toString());
+                }
+                System.out.println("Now you have " + userList.size() + " tasks in the list.\n" + DIVIDER);
+            } else {
+                throw new BarryException("You need to specify 1 or more tasks to delete.");
+            }
         } else if (input.startsWith("todo ")) {
             String name = input.substring(5);
             ToDo newToDo = new ToDo(name);
