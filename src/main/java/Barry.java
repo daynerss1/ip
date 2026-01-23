@@ -15,7 +15,7 @@ public class Barry {
             } catch (BarryException e) {
                 printErrorMessage(e.getMessage());
             }
-            input = sc.nextLine();
+            input = sc.nextLine().trim();
         }
         System.out.println(DIVIDER + "\nBye. Hope to see you again soon!\n" + DIVIDER);
     }
@@ -66,7 +66,7 @@ public class Barry {
         } else if (input.startsWith("deadline ")) {
             String[] parts = input.substring(9).split("/by", 2);
             if (parts.length == 1) {
-                throw new BarryException("You need to input a date for the deadline of this task!");
+                throw new BarryException("You need to input a date for the deadline of this task! Specify one by typing 'by <date/time>'");
             }
             String name = parts[0].trim();
             String by = parts[1].trim();
@@ -76,7 +76,7 @@ public class Barry {
         } else if (input.startsWith("event ")) {
             String[] parts = input.substring(6).split("/from", 2); // This is name + date/time
             if (parts.length == 1) {
-                throw new BarryException("An event needs a starting time! Specify one by typing '/by <date/time>");
+                throw new BarryException("An event needs a starting time! Specify one by typing '/from <date/time>");
             }
             String name = parts[0].trim();
             String[] times = parts[1].split("/to", 2);
