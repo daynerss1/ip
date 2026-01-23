@@ -32,6 +32,27 @@ public class Barry {
                     }
                     System.out.println(DIVIDER);
                 }
+            } else if (input.startsWith("todo ")) {
+                String name = input.substring(5);
+                ToDo newToDo = new ToDo(name);
+                userList.add(newToDo);
+                printAddedMessage(newToDo);
+            } else if (input.startsWith("deadline ")) {
+                String[] parts = input.substring(9).split("/by", 2);
+                String name = parts[0].trim();
+                String by = parts[1].trim();
+                Deadline newDeadline = new Deadline(name, by);
+                userList.add(newDeadline);
+                printAddedMessage(newDeadline);
+            } else if (input.startsWith("event ")) {
+                String[] parts = input.substring(6).split("/from", 2); // This is name + date/time
+                String name = parts[0].trim();
+                String[] times = parts[1].split("/to", 2);
+                String start = times[0].trim();
+                String end = times[1].trim();
+                Event newEvent = new Event(name, start, end);
+                userList.add(newEvent);
+                printAddedMessage(newEvent);
             } else {
                 Task newTask = new Task(input);
                 userList.add(newTask);
