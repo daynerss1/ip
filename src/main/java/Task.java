@@ -7,17 +7,17 @@ public class Task {
         this.done = false;
     }
 
-    public String mark() {
-        System.out.println("Nice! I've marked this task as done:\n  ");
+    public void mark() {
+        System.out.println("Nice! I've marked this task as done:");
         this.done = true;
-        return this.toString();
+        System.out.println(this.toString());
 
     }
 
-    public String unmark() {
-        System.out.println("OK, I've marked this task as not done yet:\n  ");
+    public void unmark() {
+        System.out.println("OK, I've marked this task as not done yet:");
         this.done = false;
-        return this.toString();
+        System.out.println(this.toString());
     }
 
     @Override
