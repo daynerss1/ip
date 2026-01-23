@@ -54,9 +54,7 @@ public class Barry {
                 userList.add(newEvent);
                 printAddedMessage(newEvent);
             } else {
-                Task newTask = new Task(input);
-                userList.add(newTask);
-                System.out.println(DIVIDER + "\nadded: " + input + "\n" + DIVIDER);
+                System.out.println(DIVIDER + "\nInvalid format: To add a new task, start the command with 'todo', 'deadline', or 'event'\n" + DIVIDER);
             }
             input = sc.nextLine();
         }
