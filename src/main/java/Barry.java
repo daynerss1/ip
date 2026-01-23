@@ -10,17 +10,19 @@ public class Barry {
         System.out.println(DIVIDER + "\nHello! I'm Barry\nWhat can I do for you?\n" + DIVIDER);
         String input = sc.nextLine().trim();
         while (!input.equals("bye")) {
-            parseInput(input, userList);
+            try {
+                parseInput(input, userList);
+            } catch (BarryException e) {
+                printErrorMessage(e.getMessage());
+            }
             input = sc.nextLine();
         }
         System.out.println(DIVIDER + "\nBye. Hope to see you again soon!\n" + DIVIDER);
     }
 
-    public static void parseInput(String input, ArrayList<Task> userList) {
+    public static void parseInput(String input, ArrayList<Task> userList) throws BarryException {
         if (input.equals("list")) {
-            System.out.println(DIVIDER);
             listTasks(userList);
-            System.out.println(DIVIDER);
         } else if (input.startsWith("mark") || input.startsWith("unmark")) {
             String op = input.startsWith("mark") ? "mark" : "unmark";
             String[] taskNums = input.split(" ");
