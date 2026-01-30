@@ -1,8 +1,13 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 public class Barry {
     private static final String DIVIDER = "____________________________________________________________";
+    private static final DateTimeFormatter IN_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
     public static void main(String[] args) {
         Storage storage = new Storage("./data/barry.txt");
@@ -157,10 +162,20 @@ public class Barry {
         }
         String[] parts = input.substring(9).split("/by", 2);
         if (parts.length == 1) {
-            throw new BarryException("You need to input a date for the deadline of this task! Specify one by typing 'by <date/time>'");
+            throw new BarryException("You need to input a date for the deadline of this task! "
+                    + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.");
         }
         String name = parts[0].trim();
-        String by = parts[1].trim();
+        if (name.isEmpty()) {
+            throw new BarryException("Oops! The description of a Deadline cannot be empty.");
+        }
+        String byString = parts[1].trim();
+        if (byString.isEmpty()) {
+            throw new BarryException("The Deadline's date/time cannot be empty."
+                    + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.");
+        }
+
+        LocalDateTime by = parseDateTime(byString);
         Deadline newDeadline = new Deadline(name, by);
         userList.add(newDeadline);
         printAddedMessage(newDeadline, userList.size());
@@ -173,21 +188,49 @@ public class Barry {
         }
         String[] parts = input.substring(6).split("/from", 2); // This is name + date/time
         if (parts.length == 1) {
-            throw new BarryException("An event needs a starting time! Specify one by typing '/from <date/time>");
+            throw new BarryException("An event needs a starting time!"
+                    + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.");
         }
         String name = parts[0].trim();
+        if (name.isEmpty()) {
+            throw new BarryException("Oops! The description of an Event cannot be empty.");
+        }
         String[] times = parts[1].split("/to", 2);
         if (times.length == 1) {
-            throw new BarryException("An event needs an end time! Specify one by typing '/to <date/time>");
+            throw new BarryException("An event needs an end time! "
+                    + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.");
         }
-        String start = times[0].trim();
-        String end = times[1].trim();
+        String startString = times[0].trim();
+        String endString = times[1].trim();
+
+        if (startString.isEmpty()) {
+            throw new BarryException("Start time cannot be empty! "
+                    + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.");
+        }
+        if (endString.isEmpty()) {
+            throw new BarryException("End time cannot be empty! "
+                    + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.");
+        }
+
+        LocalDateTime start = parseDateTime(startString);
+        LocalDateTime end = parseDateTime(endString);
+        if (end.isBefore(start)) {
+            throw new BarryException("Event's end time cannot be before its start time!");
+        }
+
         Event newEvent = new Event(name, start, end);
         userList.add(newEvent);
         printAddedMessage(newEvent, userList.size());
         storage.save(userList);
     }
 
+    private static LocalDateTime parseDateTime(String s) throws BarryException {
+        try {
+            return LocalDateTime.parse(s.trim(), IN_DATE_FORMAT);
+        } catch (DateTimeParseException e) {
+            throw new BarryException("Invalid date/time. Use yyyy-MM-dd HHmm (e.g., 2026-01-30 1400).");
+        }
+    }
 
     public static void listTasks(ArrayList<Task> taskList) {
         System.out.println(DIVIDER);

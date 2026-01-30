@@ -8,6 +8,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 /**
  * Represents the data file in the hard disk that stores the user's task list.
  * Automatically loads the data in the file when the driver is started, and automatically
@@ -16,6 +20,8 @@ import java.util.ArrayList;
 
 public class Storage {
     private final Path filePath;
+    private static final DateTimeFormatter SAVE_DATE_TIME_FORMAT = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HHmm");
 
     public Storage(String filePath) {
         this.filePath = Paths.get(filePath);
@@ -24,7 +30,7 @@ public class Storage {
     public ArrayList<Task> load() throws BarryException {
         ensureParentDirExists(); // throws BarryException if unable to create parent directory
         if (!Files.exists(this.filePath)) {
-            System.out.println("No data file exists yet. Creating one for you!");
+            System.out.println("No data file exists yet. Starting an empty task list!");
             return new ArrayList<>();
         }
 
@@ -72,24 +78,31 @@ public class Storage {
             throw new BarryException("Corrupted done flag in line: " + line);
         }
 
-        switch (type) {
-        case "T":
-            task = new ToDo(desc);
-            break;
-        case "D":
-            if (parts.length < 4) {
-                throw new BarryException("Corrupted deadline line: " + line);
+        try {
+            switch (type) {
+            case "T":
+                task = new ToDo(desc);
+                break;
+            case "D":
+                if (parts.length < 4) {
+                    throw new BarryException("Corrupted deadline line: " + line);
+                }
+                LocalDateTime by = LocalDateTime.parse(parts[3].trim(), SAVE_DATE_TIME_FORMAT);
+                task = new Deadline(desc, by);
+                break;
+            case "E":
+                if (parts.length < 5) {
+                    throw new BarryException("Corrupted event line: " + line);
+                }
+                LocalDateTime start = LocalDateTime.parse(parts[3].trim(), SAVE_DATE_TIME_FORMAT);
+                LocalDateTime end = LocalDateTime.parse(parts[4].trim(), SAVE_DATE_TIME_FORMAT);
+                task = new Event(desc, start, end);
+                break;
+            default:
+                throw new BarryException("Unknown task type in data file: " + line);
             }
-            task = new Deadline(desc, parts[3].trim());
-            break;
-        case "E":
-            if (parts.length < 5) {
-                throw new BarryException("Corrupted event line: " + line);
-            }
-            task = new Event(desc, parts[3].trim(), parts[4].trim());
-            break;
-        default:
-            throw new BarryException("Unknown task type in data file: " + line);
+        } catch (DateTimeParseException e) {
+            throw new BarryException("Corrupted date/time in data file line: " + line);
         }
 
         if (isDone) {
@@ -120,13 +133,18 @@ public class Storage {
 
         if (task instanceof ToDo) {
             return "T" + SEPARATOR + done + SEPARATOR + task.getName();
+
         } else if (task instanceof Deadline) {
             Deadline dlTask = (Deadline) task;
-            return "D" + SEPARATOR + done + SEPARATOR + dlTask.getName() + SEPARATOR + dlTask.getBy();
+            String byString = dlTask.getBy().format(SAVE_DATE_TIME_FORMAT);
+            return "D" + SEPARATOR + done + SEPARATOR + dlTask.getName() + SEPARATOR + byString;
+
         } else if (task instanceof Event) {
             Event eventTask = (Event) task;
+            String startString = eventTask.getFrom().format(SAVE_DATE_TIME_FORMAT);
+            String endString = eventTask.getTo().format(SAVE_DATE_TIME_FORMAT);
             return "E" + SEPARATOR + done + SEPARATOR + eventTask.getName() + SEPARATOR
-                    + eventTask.getFrom() + SEPARATOR + eventTask.getTo();
+                    + startString + SEPARATOR + endString;
         } else {
             throw new BarryException("Unknown task type, unable to save.");
         }
