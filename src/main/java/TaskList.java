@@ -27,4 +27,10 @@ public class TaskList {
     public int size() {
         return tasks.size();
     }
+
+    public void checkIndex1Based(int taskNum) throws BarryException {
+        if (taskNum < 1 || taskNum > size()) {
+            throw new BarryException("Task number out of range.");
+        }
+    }
 }

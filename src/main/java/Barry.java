@@ -1,35 +1,33 @@
-import java.util.Scanner;
-import java.util.ArrayList;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class Barry {
-    private static final String DIVIDER = "____________________________________________________________";
     private static final DateTimeFormatter IN_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
     public static void main(String[] args) {
+        Ui ui = new Ui();
         Storage storage = new Storage("./data/barry.txt");
-        ArrayList<Task> userList;
+
+        TaskList userList;
         try {
-            userList = storage.load();
+            userList = new TaskList(storage.load());
         } catch (BarryException e) {
-            userList = new ArrayList<>();
-            printErrorMessage("Saved data was corrupted. Starting a new file. " + e.getMessage());
+            userList = new TaskList();
+            ui.showError("Saved data was corrupted. Starting a new file. " + e.getMessage());
         }
-        Scanner sc = new Scanner(System.in);
-        System.out.println(DIVIDER + "\nHello! I'm Barry\nWhat can I do for you?\n" + DIVIDER);
-        String input = sc.nextLine().trim();
+
+        ui.showWelcome();
+        String input = ui.readCommand();
         while (!input.equals("bye")) {
             try {
-                parseInput(input, userList, storage);
+                parseInput(input, userList, storage, ui);
             } catch (BarryException e) {
-                printErrorMessage(e.getMessage());
+                ui.showError(e.getMessage());
             }
-            input = sc.nextLine().trim();
+            input = ui.readCommand();
         }
-        System.out.println(DIVIDER + "\nBye. Hope to see you again soon!\n" + DIVIDER);
+        ui.showBye();
     }
 
     public static Command getCommandType(String input) throws BarryException {
@@ -59,35 +57,35 @@ public class Barry {
         }
     }
 
-    public static void parseInput(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
+    public static void parseInput(String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
         Command command = getCommandType(input);
         switch (command) {
         case LIST: {
-            listTasks(userList);
+            ui.showTaskList(userList);
             break;
         }
         case TODO: {
-            handleTodo(input, userList, storage);
+            handleTodo(input, userList, storage, ui);
             break;
         }
         case DEADLINE: {
-            handleDeadline(input, userList, storage);
+            handleDeadline(input, userList, storage, ui);
             break;
         }
         case EVENT: {
-            handleEvent(input, userList, storage);
+            handleEvent(input, userList, storage, ui);
             break;
         }
         case DELETE: {
-            handleDelete(input, userList, storage);
+            handleDelete(input, userList, storage, ui);
             break;
         }
         case MARK: {
-            handleMark(input, userList, storage);
+            handleMark(input, userList, storage, ui);
             break;
         }
         case UNMARK: {
-            handleUnmark(input, userList, storage);
+            handleUnmark(input, userList, storage, ui);
             break;
         }
         case BYE: {
@@ -96,67 +94,71 @@ public class Barry {
         }
     }
 
-    public static void handleMark(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
-        String[] taskNums = input.split(" ");
+    private static int parseTaskNumber(String s) throws BarryException {
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            throw new BarryException("Task numbers must be integers.");
+        }
+    }
+
+    public static void handleMark(
+            String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
+        String[] taskNums = input.split("\\s+");
         if (taskNums.length > 1) {
-            System.out.println(DIVIDER);
             for (int i = 1; i < taskNums.length; i++) {
-                int number = Integer.parseInt(taskNums[i]);
+                int number = parseTaskNumber(taskNums[i]);      // 1-based
+                userList.checkIndex1Based(number);
                 userList.get(number - 1).mark();
+                ui.showTaskMarked(userList.get(number - 1));
             }
-            storage.save(userList);
-            System.out.println(DIVIDER);
         } else {
             throw new BarryException("You need to specify 1 or more tasks to mark.");
         }
     }
 
-    public static void handleUnmark(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
-        String[] taskNums = input.split(" ");
+    public static void handleUnmark(String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
+        String[] taskNums = input.split("\\s+");
         if (taskNums.length > 1) {
-            System.out.println(DIVIDER);
             for (int i = 1; i < taskNums.length; i++) {
-                int number = Integer.parseInt(taskNums[i]);
+                int number = parseTaskNumber(taskNums[i]);
+                userList.checkIndex1Based(number);
                 userList.get(number - 1).unmark();
+                ui.showTaskUnmarked(userList.get(number - 1));
             }
-            storage.save(userList);
-            System.out.println(DIVIDER);
         } else {
             throw new BarryException("You need to specify 1 or more tasks to unmark.");
         }
     }
 
-    public static void handleDelete(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
-        String[] taskNums = input.split(" ");
+    public static void handleDelete(String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
+        String[] taskNums = input.split("\\s+");
         if (taskNums.length > 1) {
-            System.out.println(DIVIDER);
             for (int i = 1; i < taskNums.length; i++) {
-                int number = Integer.parseInt(taskNums[i]);
-                Task removedTask = userList.get(number - 1);
+                int number = parseTaskNumber(taskNums[i]);
+                userList.checkIndex1Based(number);
+                ui.showTaskDeleted(userList.get(number - 1), userList.size() - 1);
                 userList.remove(number - 1);
-                System.out.println("Noted. I've removed this task.");
-                System.out.println(removedTask.toString());
             }
             storage.save(userList);
-            System.out.println("Now you have " + userList.size() + " tasks in the list.\n" + DIVIDER);
         } else {
             throw new BarryException("You need to specify 1 or more tasks to delete.");
         }
     }
 
-    public static void handleTodo(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
+    public static void handleTodo(String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
         if (input.trim().toLowerCase().equals("todo")) {
             throw new BarryException("Oops! The description of a ToDo cannot be empty.");
         } else {
             String name = input.substring(5);
             ToDo newToDo = new ToDo(name);
             userList.add(newToDo);
-            printAddedMessage(newToDo, userList.size());
+            ui.showTaskAdded(newToDo, userList.size());
             storage.save(userList);
         }
     }
 
-    public static void handleDeadline(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
+    public static void handleDeadline(String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
         if (input.trim().toLowerCase().equals("deadline")) {
             throw new BarryException("Oops! The description of a Deadline cannot be empty.");
         }
@@ -178,11 +180,11 @@ public class Barry {
         LocalDateTime by = parseDateTime(byString);
         Deadline newDeadline = new Deadline(name, by);
         userList.add(newDeadline);
-        printAddedMessage(newDeadline, userList.size());
+        ui.showTaskAdded(newDeadline, userList.size());
         storage.save(userList);
     }
 
-    public static void handleEvent(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
+    public static void handleEvent(String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
         if (input.trim().toLowerCase().equals("event")) {
             throw new BarryException("Oops! The description of an Event cannot be empty.");
         }
@@ -220,7 +222,7 @@ public class Barry {
 
         Event newEvent = new Event(name, start, end);
         userList.add(newEvent);
-        printAddedMessage(newEvent, userList.size());
+        ui.showTaskAdded(newEvent, userList.size());
         storage.save(userList);
     }
 
@@ -230,27 +232,5 @@ public class Barry {
         } catch (DateTimeParseException e) {
             throw new BarryException("Invalid date/time. Use yyyy-MM-dd HHmm (e.g., 2026-01-30 1400).");
         }
-    }
-
-    public static void listTasks(ArrayList<Task> taskList) {
-        System.out.println(DIVIDER);
-        if (taskList.isEmpty()) {
-            System.out.println("Your task list is currently empty.\n" + DIVIDER);
-            return;
-        }
-        System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < taskList.size(); i++) {
-            System.out.println((i + 1) + ". " + taskList.get(i).toString());
-        }
-        System.out.println(DIVIDER);
-    }
-
-    public static void printAddedMessage(Task task, int size) {
-        System.out.println(DIVIDER + "\nGot it. I've added this task:\n" + task.toString());
-        System.out.println("Now you have " + size + " tasks in the list.\n" + DIVIDER);
-    }
-
-    public static void printErrorMessage(String msg) {
-        System.out.println(DIVIDER + "\n" + msg + "\n" + DIVIDER);
     }
 }

@@ -114,12 +114,12 @@ public class Storage {
         return task;
     }
 
-    public void save(List<Task> tasks) throws BarryException {
+    public void save(TaskList tasks) throws BarryException {
         ensureParentDirExists();
 
         try (FileWriter fw = new FileWriter(filePath.toFile(), false)) {
-            for (Task task : tasks) {
-                fw.write(taskToLine(task));
+            for (int i = 0; i < tasks.size(); i++) {
+                fw.write(taskToLine(tasks.get(i)));
                 fw.write(System.lineSeparator());
             }
         } catch (IOException e) {

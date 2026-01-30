@@ -8,16 +8,11 @@ public class Task {
     }
 
     public void mark() {
-        System.out.println("Nice! I've marked this task as done:");
         this.done = true;
-        System.out.println(this.toString());
-
     }
 
     public void unmark() {
-        System.out.println("OK, I've marked this task as not done yet:");
         this.done = false;
-        System.out.println(this.toString());
     }
 
     public boolean isDone() {
