@@ -20,6 +20,14 @@ public class Task {
         System.out.println(this.toString());
     }
 
+    public boolean isDone() {
+        return this.done;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
     @Override
     public String toString() {
         String completion = this.done ? "X" : " ";

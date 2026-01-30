@@ -5,13 +5,20 @@ public class Barry {
     private static final String DIVIDER = "____________________________________________________________";
 
     public static void main(String[] args) {
-        ArrayList<Task> userList = new ArrayList<>();
+        Storage storage = new Storage("./data/barry.txt");
+        ArrayList<Task> userList;
+        try {
+            userList = storage.load();
+        } catch (BarryException e) {
+            userList = new ArrayList<>();
+            printErrorMessage("Saved data was corrupted. Starting a new file. " + e.getMessage());
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println(DIVIDER + "\nHello! I'm Barry\nWhat can I do for you?\n" + DIVIDER);
         String input = sc.nextLine().trim();
         while (!input.equals("bye")) {
             try {
-                parseInput(input, userList);
+                parseInput(input, userList, storage);
             } catch (BarryException e) {
                 printErrorMessage(e.getMessage());
             }
@@ -21,61 +28,70 @@ public class Barry {
     }
 
     public static Command getCommandType(String input) throws BarryException {
-        if (input.equals("")) {
+        if (input.isEmpty()) {
             throw new BarryException("Input command cannot be empty.");
         }
         String firstWord = input.split(" ")[0].toLowerCase();
         switch (firstWord) {
-            case "list": return Command.LIST;
-            case "todo": return Command.TODO;
-            case "deadline": return Command.DEADLINE;
-            case "event": return Command.EVENT;
-            case "mark": return Command.MARK;
-            case "unmark": return Command.UNMARK;
-            case "delete": return Command.DELETE;
-            case "bye": return Command.BYE;
-            default: throw new BarryException("Invalid command: To add a new task, start the command with 'todo', 'deadline', or 'event'");
+        case "list":
+            return Command.LIST;
+        case "todo":
+            return Command.TODO;
+        case "deadline":
+            return Command.DEADLINE;
+        case "event":
+            return Command.EVENT;
+        case "mark":
+            return Command.MARK;
+        case "unmark":
+            return Command.UNMARK;
+        case "delete":
+            return Command.DELETE;
+        case "bye":
+            return Command.BYE;
+        default:
+            throw new BarryException("Invalid command: To add a new task, start the command with 'todo', 'deadline', or 'event'");
         }
     }
 
-    public static void parseInput(String input, ArrayList<Task> userList) throws BarryException {
+    public static void parseInput(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
         Command command = getCommandType(input);
         switch (command) {
-            case LIST: {
-                listTasks(userList);
-                break;
-            }
-            case TODO: {
-                handleTodo(input, userList);
-                break;
-            }
-            case DEADLINE: {
-                handleDeadline(input, userList);
-                break;
-            }
-            case EVENT: {
-                handleEvent(input, userList);
-                break;
-            }
-            case DELETE: {
-                handleDelete(input, userList);
-                break;
-            }
-            case MARK: {
-                handleMark(input, userList);
-                break;
-            }
-            case UNMARK: {
-                handleUnmark(input, userList);
-                break;
-            }
-            case BYE: {
-                break;
-            }
+        case LIST: {
+            listTasks(userList);
+            break;
+        }
+        case TODO: {
+            handleTodo(input, userList, storage);
+            break;
+        }
+        case DEADLINE: {
+            handleDeadline(input, userList, storage);
+            break;
+        }
+        case EVENT: {
+            handleEvent(input, userList, storage);
+            break;
+        }
+        case DELETE: {
+            handleDelete(input, userList, storage);
+            break;
+        }
+        case MARK: {
+            handleMark(input, userList, storage);
+            break;
+        }
+        case UNMARK: {
+            handleUnmark(input, userList, storage);
+            break;
+        }
+        case BYE: {
+            break;
+        }
         }
     }
 
-    public static void handleMark(String input, ArrayList<Task> userList) throws BarryException {
+    public static void handleMark(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
         String[] taskNums = input.split(" ");
         if (taskNums.length > 1) {
             System.out.println(DIVIDER);
@@ -83,13 +99,14 @@ public class Barry {
                 int number = Integer.parseInt(taskNums[i]);
                 userList.get(number - 1).mark();
             }
+            storage.save(userList);
             System.out.println(DIVIDER);
         } else {
             throw new BarryException("You need to specify 1 or more tasks to mark.");
         }
     }
 
-    public static void handleUnmark(String input, ArrayList<Task> userList) throws BarryException {
+    public static void handleUnmark(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
         String[] taskNums = input.split(" ");
         if (taskNums.length > 1) {
             System.out.println(DIVIDER);
@@ -97,13 +114,14 @@ public class Barry {
                 int number = Integer.parseInt(taskNums[i]);
                 userList.get(number - 1).unmark();
             }
+            storage.save(userList);
             System.out.println(DIVIDER);
         } else {
             throw new BarryException("You need to specify 1 or more tasks to unmark.");
         }
     }
 
-    public static void handleDelete(String input, ArrayList<Task> userList) throws BarryException {
+    public static void handleDelete(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
         String[] taskNums = input.split(" ");
         if (taskNums.length > 1) {
             System.out.println(DIVIDER);
@@ -114,13 +132,14 @@ public class Barry {
                 System.out.println("Noted. I've removed this task.");
                 System.out.println(removedTask.toString());
             }
+            storage.save(userList);
             System.out.println("Now you have " + userList.size() + " tasks in the list.\n" + DIVIDER);
         } else {
             throw new BarryException("You need to specify 1 or more tasks to delete.");
         }
     }
 
-    public static void handleTodo(String input, ArrayList<Task> userList) throws BarryException {
+    public static void handleTodo(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
         if (input.trim().toLowerCase().equals("todo")) {
             throw new BarryException("Oops! The description of a ToDo cannot be empty.");
         } else {
@@ -128,10 +147,11 @@ public class Barry {
             ToDo newToDo = new ToDo(name);
             userList.add(newToDo);
             printAddedMessage(newToDo, userList.size());
+            storage.save(userList);
         }
     }
 
-    public static void handleDeadline(String input, ArrayList<Task> userList) throws BarryException {
+    public static void handleDeadline(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
         if (input.trim().toLowerCase().equals("deadline")) {
             throw new BarryException("Oops! The description of a Deadline cannot be empty.");
         }
@@ -144,9 +164,10 @@ public class Barry {
         Deadline newDeadline = new Deadline(name, by);
         userList.add(newDeadline);
         printAddedMessage(newDeadline, userList.size());
+        storage.save(userList);
     }
 
-    public static void handleEvent(String input, ArrayList<Task> userList) throws BarryException {
+    public static void handleEvent(String input, ArrayList<Task> userList, Storage storage) throws BarryException {
         if (input.trim().toLowerCase().equals("event")) {
             throw new BarryException("Oops! The description of an Event cannot be empty.");
         }
@@ -164,12 +185,13 @@ public class Barry {
         Event newEvent = new Event(name, start, end);
         userList.add(newEvent);
         printAddedMessage(newEvent, userList.size());
+        storage.save(userList);
     }
 
 
     public static void listTasks(ArrayList<Task> taskList) {
         System.out.println(DIVIDER);
-        if (taskList.size() == 0) {
+        if (taskList.isEmpty()) {
             System.out.println("Your task list is currently empty.\n" + DIVIDER);
             return;
         }
