@@ -134,11 +134,17 @@ public class Barry {
     public static void handleDelete(String input, TaskList userList, Storage storage, Ui ui) throws BarryException {
         String[] taskNums = input.split("\\s+");
         if (taskNums.length > 1) {
+            int[] nums = new int[taskNums.length - 1];
             for (int i = 1; i < taskNums.length; i++) {
-                int number = parseTaskNumber(taskNums[i]);
-                userList.checkIndex1Based(number);
-                ui.showTaskDeleted(userList.get(number - 1), userList.size() - 1);
-                userList.remove(number - 1);
+                nums[i - 1] = parseTaskNumber(taskNums[i]);
+                userList.checkIndex1Based(nums[i - 1]);
+            }
+            java.util.Arrays.sort(nums);
+
+            for (int i = nums.length - 1; i >= 0; i--) {
+                int idx = nums[i] - 1;
+                Task removed = userList.remove(idx);
+                ui.showTaskDeleted(removed, userList.size());
             }
             storage.save(userList);
         } else {
