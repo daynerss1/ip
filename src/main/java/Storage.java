@@ -100,4 +100,35 @@ public class Storage {
 
         return task;
     }
+
+    public void save(List<Task> tasks) throws BarryException {
+        ensureParentDirExists();
+
+        try (FileWriter fw = new FileWriter(filePath.toFile(), false)) {
+            for (Task task : tasks) {
+                fw.write(taskToLine(task));
+                fw.write(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            throw new BarryException("Failed to save tasks: " + e.getMessage());
+        }
+    }
+
+    public String taskToLine(Task task) throws BarryException {
+        String done = task.isDone() ? "1" : "0";
+        final String SEPARATOR = " | ";
+
+        if (task instanceof ToDo) {
+            return "T" + SEPARATOR + done + SEPARATOR + task.getName();
+        } else if (task instanceof Deadline) {
+            Deadline dlTask = (Deadline) task;
+            return "D" + SEPARATOR + done + SEPARATOR + dlTask.getName() + SEPARATOR + dlTask.getBy();
+        } else if (task instanceof Event) {
+            Event eventTask = (Event) task;
+            return "E" + SEPARATOR + done + SEPARATOR + eventTask.getName() + SEPARATOR
+                    + eventTask.getFrom() + SEPARATOR + eventTask.getTo();
+        } else {
+            throw new BarryException("Unknown task type, unable to save.");
+        }
+    }
 }
