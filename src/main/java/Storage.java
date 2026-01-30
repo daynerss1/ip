@@ -1,0 +1,103 @@
+import java.io.IOException;
+import java.io.FileWriter;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+
+import java.util.List;
+import java.util.ArrayList;
+
+/**
+ * Represents the data file in the hard disk that stores the user's task list.
+ * Automatically loads the data in the file when the driver is started, and automatically
+ * updates the save file whenever the task list changes.
+ */
+
+public class Storage {
+    private final Path filePath;
+
+    public Storage(String filePath) {
+        this.filePath = Paths.get(filePath);
+    }
+
+    public ArrayList<Task> load() throws BarryException {
+        ensureParentDirExists(); // throws BarryException if unable to create parent directory
+        if (!Files.exists(this.filePath)) {
+            System.out.println("No data file exists yet. Creating one for you!");
+            return new ArrayList<>();
+        }
+
+        try {
+            List<String> linesFromFile = Files.readAllLines(this.filePath);
+            ArrayList<Task> tasks = new ArrayList<>();
+            for (String line : linesFromFile) {
+                if (!line.trim().isEmpty()) {
+                    tasks.add(parseLineToTasks(line)); // throws BarryException if unable to parse line
+                }
+            }
+            return tasks;
+        } catch (IOException e) {
+            throw new BarryException("Failed to load saved tasks: " + e.getMessage());
+        }
+    }
+
+    public void ensureParentDirExists() throws BarryException {
+        try {
+            Path parent = filePath.getParent();
+            if (parent != null) {                   // if parent is null, there is no parent
+                Files.createDirectories(parent);    // directory to be created
+            }
+        } catch (IOException e) {
+            throw new BarryException("Failed to create data folder: " + e.getMessage());
+        }
+    }
+
+    public Task parseLineToTasks(String line) throws BarryException {
+        Task task;
+        // Follow format from CS2103 iP task description
+        String[] parts = line.split("\\s*\\|\\s*"); // Split by " | "
+        if (parts.length < 3) {
+            throw new BarryException("Corrupted save file line: " + line);
+        }
+
+        String type = parts[0].trim();
+        String doneString = parts[1].trim();
+        String desc = parts[2].trim();
+
+        boolean isDone = false;
+        if (doneString.equals("1")) {
+            isDone = true;
+        } else if (!doneString.equals("0")) {
+            throw new BarryException("Corrupted done flag in line: " + line);
+        }
+
+        switch (type) {
+        case "T":
+            task = new ToDo(desc);
+            break;
+        case "D":
+            if (parts.length < 4) {
+                throw new BarryException("Corrupted deadline line: " + line);
+            }
+            task = new Deadline(desc, parts[3].trim());
+            break;
+        case "E":
+            if (parts.length < 5) {
+                throw new BarryException("Corrupted event line: " + line);
+            }
+            task = new Event(desc, parts[3].trim(), parts[4].trim());
+            break;
+        default:
+            throw new BarryException("Unknown task type in data file: " + line);
+        }
+
+        if (isDone) {
+            task.mark();
+        } else {
+            task.unmark();
+        }
+
+        return task;
+    }
+}
