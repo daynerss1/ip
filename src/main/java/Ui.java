@@ -1,5 +1,4 @@
 import java.util.Scanner;
-import java.util.ArrayList;
 
 public class Ui {
     private static final String DIVIDER = "____________________________________________________________";
@@ -57,11 +56,15 @@ public class Ui {
         System.out.println(DIVIDER);
     }
 
-    public void showTaskList(ArrayList<Task> tasks) {
+    public void showTaskList(TaskList tasks) {
         System.out.println(DIVIDER);
+        if (tasks.size() == 0) {
+            System.out.println("Your task list is currently empty.\n" + DIVIDER);
+            return;
+        }
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.get(i));
+            System.out.println((i + 1) + "." + tasks.get(i).toString());
         }
         System.out.println(DIVIDER);
     }
