@@ -1,3 +1,6 @@
+package barry.task;
+
+import barry.exception.BarryException;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,3 +1,12 @@
+package barry.storage;
+
+import barry.exception.BarryException;
+import barry.task.Task;
+import barry.task.ToDo;
+import barry.task.Deadline;
+import barry.task.Event;
+import barry.task.TaskList;
+
 import java.io.IOException;
 import java.io.FileWriter;
 

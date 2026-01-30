@@ -1,3 +1,5 @@
+package barry.parser;
+
 import java.time.LocalDateTime;
 
 public class ParsedInput {

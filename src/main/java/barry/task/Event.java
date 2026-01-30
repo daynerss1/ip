@@ -1,12 +1,13 @@
-import java.time.LocalDate;
+package barry.task;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Event extends Task {
     private static final DateTimeFormatter FORMAT_OUT = DateTimeFormatter
             .ofPattern("MMM dd yyyy HH:mm");
-    private LocalDateTime start;
-    private LocalDateTime end;
+    private final LocalDateTime start;
+    private final LocalDateTime end;
 
     public Event(String name, LocalDateTime start, LocalDateTime end) {
         super(name);

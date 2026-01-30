@@ -1,3 +1,5 @@
+package barry.parser;
+
 public enum Command {
     LIST,
     TODO,

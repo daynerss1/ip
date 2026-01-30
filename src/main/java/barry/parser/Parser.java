@@ -1,3 +1,7 @@
+package barry.parser;
+
+import barry.exception.BarryException;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;

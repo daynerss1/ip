@@ -1,3 +1,8 @@
+package barry.ui;
+
+import barry.task.Task;
+import barry.task.TaskList;
+
 import java.util.Scanner;
 
 public class Ui {
