@@ -88,7 +88,7 @@ public class Parser {
     }
 
     private static ParsedInput parseTodo(String input) throws BarryException {
-        if (input.trim().toLowerCase().equals("todo")) {
+        if (input.trim().equalsIgnoreCase("todo")) {
             throw new BarryException("Oops! The description of a ToDo cannot be empty.");
         } else {
             String name = input.substring(5);
@@ -100,7 +100,7 @@ public class Parser {
     }
 
     private static ParsedInput parseDeadline(String input) throws BarryException {
-        if (input.trim().toLowerCase().equals("deadline")) {
+        if (input.trim().equalsIgnoreCase("deadline")) {
             throw new BarryException("Oops! The description of a Deadline cannot be empty.");
         }
         String[] parts = input.substring(9).split("/by", 2);
@@ -123,7 +123,7 @@ public class Parser {
     }
 
     private static ParsedInput parseEvent(String input) throws BarryException {
-        if (input.trim().toLowerCase().equals("event")) {
+        if (input.trim().equalsIgnoreCase("event")) {
             throw new BarryException("Oops! The description of an Event cannot be empty.");
         }
         String[] parts = input.substring(6).split("/from", 2); // This is name + date/time
