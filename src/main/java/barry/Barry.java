@@ -12,6 +12,7 @@ import barry.parser.ParsedInput;
 import barry.exception.BarryException;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * The main entry point and orchestrator for the Barry chatbot application.
@@ -104,6 +105,11 @@ public class Barry {
                 case DELETE: {
                     handleDelete(p.taskNumbers);
                     storage.save(userList);
+                    break;
+                }
+                case FIND: {
+                    List<TaskList.IndexedTask> matches = userList.findByKeyword(p.name);
+                    ui.showFindResults(matches);
                     break;
                 }
                 case BYE: {

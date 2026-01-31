@@ -51,6 +51,9 @@ public class Parser {
         case EVENT:
             return parseEvent(input);
 
+        case FIND:
+            return parseFind(input);
+
         case MARK:
         case UNMARK:
         case DELETE:
@@ -81,6 +84,8 @@ public class Parser {
             return Command.DELETE;
         case "bye":
             return Command.BYE;
+        case "find":
+            return Command.FIND;
         default:
             throw new BarryException("Invalid command: Use 'todo', 'deadline', 'event', 'list', 'mark', "
                     + "'unmark', 'delete', or 'bye'");
@@ -172,6 +177,19 @@ public class Parser {
         }
 
         return ParsedInput.numbers(type, nums);
+    }
+
+    private static ParsedInput parseFind(String input) throws BarryException {
+        if (input.trim().equalsIgnoreCase("find")) {
+            throw new BarryException("Find what? Please provide a keyword.");
+        }
+
+        String keyword = input.substring(5).trim(); // after "find "
+        if (keyword.isEmpty()) {
+            throw new BarryException("Find what? Please provide a keyword.");
+        }
+
+        return ParsedInput.find(keyword);
     }
 
     private static LocalDateTime parseDateTime(String s) throws BarryException {
