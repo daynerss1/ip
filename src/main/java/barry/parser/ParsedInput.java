@@ -51,4 +51,14 @@ public class ParsedInput {
     public static ParsedInput numbers(Command type, int[] taskNumbers) {
         return new ParsedInput(type, null, null, null, null, taskNumbers);
     }
+
+    /**
+     * Creates a parsed representation of a FIND command.
+     *
+     * @param keyword The keyword to filter tasks by.
+     * @return A {@code ParsedInput} containing the specified keyword.
+     */
+    public static ParsedInput find(String keyword) {
+        return new ParsedInput(Command.FIND, keyword, null, null, null, null);
+    }
 }

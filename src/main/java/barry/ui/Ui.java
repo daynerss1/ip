@@ -4,6 +4,7 @@ import barry.task.Task;
 import barry.task.TaskList;
 
 import java.util.Scanner;
+import java.util.List;
 
 public class Ui {
     private static final String DIVIDER = "____________________________________________________________";
@@ -70,6 +71,26 @@ public class Ui {
         System.out.println("Here are the tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println((i + 1) + "." + tasks.get(i).toString());
+        }
+        System.out.println(DIVIDER);
+    }
+
+    /**
+     * Displays the list of tasks that matches the keyword specified.
+     *
+     * @param matches The list of tasks that matches the keyword specified, with their correct indexes.
+     */
+    public void showFindResults(List<TaskList.IndexedTask> matches) {
+        System.out.println(DIVIDER);
+        if (matches.isEmpty()) {
+            System.out.println("No matching tasks found.");
+            System.out.println(DIVIDER);
+            return;
+        }
+
+        System.out.println("Here are the matching tasks in your list:");
+        for (TaskList.IndexedTask it : matches) {
+            System.out.println(it.index1Based + "." + it.task);
         }
         System.out.println(DIVIDER);
     }
