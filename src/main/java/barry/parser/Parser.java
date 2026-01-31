@@ -6,10 +6,30 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Parses raw user command strings into structured {@link barry.parser.ParsedInput} objects.
+ *
+ * <p>The parser validates command syntax and argument formats
+ * (e.g., required flags such as {@code /by},
+ * {@code /from}, {@code /to}, and date/time formats).
+ */
 public class Parser {
     private static final DateTimeFormatter IN_DATE_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
+    /**
+     * Parses a raw user command string into a structured {@link ParsedInput}.
+     *
+     * <p>This method validates the command format and arguments
+     * (e.g., date/time formatting, required flags).
+     * It does not validate indices against the current task list size;
+     * that is handled by {@code TaskList}.</p>
+     *
+     * @param input Raw command entered by the user.
+     * @return A structured representation of the command and its arguments.
+     * @throws BarryException If the input is empty, the command is unknown,
+     * or the arguments are invalid.
+     */
     public static ParsedInput parse(String input) throws BarryException {
         if (input == null || input.trim().isEmpty()) {
             throw new BarryException("Input command cannot be empty.");
@@ -41,7 +61,7 @@ public class Parser {
         }
     }
 
-    public static Command getCommandType(String input) throws BarryException {
+    private static Command getCommandType(String input) throws BarryException {
         String firstWord = input.split("\\s+")[0].toLowerCase();
 
         switch (firstWord) {

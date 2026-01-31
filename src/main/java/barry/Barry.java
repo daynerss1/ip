@@ -13,11 +13,27 @@ import barry.exception.BarryException;
 
 import java.util.Arrays;
 
+/**
+ * The main entry point and orchestrator for the Barry chatbot application.
+ *
+ * <p>Barry coordinates interactions between the {@code Ui} (user I/O), {@code Parser} (command parsing),
+ * {@code TaskList} (in-memory task state), and {@code Storage} (persistence).
+ * It runs the main input loop, executes user commands, and saves tasks whenever the list changes.</p>
+ */
 public class Barry {
     private final Ui ui;
     private final TaskList userList;
     private final Storage storage;
 
+    /**
+     * Creates a new Barry chatbot instance.
+     * Initializes UI and storage components, then attempts to load
+     * saved tasks from the given file path.
+     * If loading fails (e.g., corrupted file),
+     * Barry starts with an empty task list and reports the error to the user.
+     *
+     * @param filePath Relative path to the save file (e.g.,"./data/barry.txt").
+     */
     public Barry(String filePath) {
         this.ui = new Ui();
         this.storage = new Storage(filePath);
@@ -27,11 +43,19 @@ public class Barry {
             loaded = new TaskList(storage.load());
         } catch (BarryException e) {
             loaded = new TaskList();
-            ui.showError("Saved data was corrupted. Starting a new file. " + e.getMessage());
+            ui.showLoadingError("Saved data was corrupted. Starting a new file. " + e.getMessage());
         }
         this.userList = loaded;
     }
 
+    /**
+     * Runs the main interaction loop of the chatbot.
+     *
+     * Reads user commands from the UI, parses them using {@link barry.parser.Parser},
+     * executes the corresponding operations on the task list,
+     * and saves changes via {@link barry.storage.Storage}
+     * when the task list is modified.
+     */
     public void run() {
         ui.showWelcome();
 
@@ -127,6 +151,11 @@ public class Barry {
         }
     }
 
+    /**
+     * Entry point of the application.
+     *
+     * @param args Command-line arguments (unused).
+     */
     public static void main(String[] args) {
         new Barry("./data/barry.txt").run();
     }

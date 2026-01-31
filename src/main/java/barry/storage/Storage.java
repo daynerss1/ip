@@ -32,10 +32,26 @@ public class Storage {
     private static final DateTimeFormatter SAVE_DATE_TIME_FORMAT = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HHmm");
 
+    /**
+     * Constructs a storage component that reads/writes tasks to a file.
+     *
+     * @param filePath Relative path to the save file (e.g., {@code "./data/barry.txt"}).
+     */
     public Storage(String filePath) {
         this.filePath = Paths.get(filePath);
     }
 
+    /**
+     * Loads tasks from the save file.
+     *
+     * If the parent directory does not exist, it will be created.
+     * If the save file does not exist,
+     * this method returns an empty task list.
+     *
+     * @return A list of tasks loaded from disk.
+     * @throws BarryException If the save file exists but cannot be read
+     * or contains corrupted lines.
+     */
     public ArrayList<Task> load() throws BarryException {
         ensureParentDirExists(); // throws BarryException if unable to create parent directory
         if (!Files.exists(this.filePath)) {
@@ -57,6 +73,11 @@ public class Storage {
         }
     }
 
+    /**
+     * Ensures the parent directory of the save file exists by creating it if needed.
+     *
+     * @throws BarryException If the folder cannot be created due to an I/O error.
+     */
     public void ensureParentDirExists() throws BarryException {
         try {
             Path parent = filePath.getParent();
@@ -68,6 +89,21 @@ public class Storage {
         }
     }
 
+    /**
+     * Parses a single line from the save file into a {@link Task}.
+     *
+     * Expected format (pipe-separated):
+     * <ul>
+     *   <li>{@code T | doneFlag | description}</li>
+     *   <li>{@code D | doneFlag | description | yyyy-MM-dd HHmm}</li>
+     *   <li>{@code E | doneFlag | description | yyyy-MM-dd HHmm | yyyy-MM-dd HHmm}</li>
+     * </ul>
+     *
+     * @param line A non-empty line from the save file.
+     * @return A task constructed from the data in the line.
+     * @throws BarryException If the line format, done flag,
+     * or task type is invalid/corrupted.
+     */
     public Task parseLineToTasks(String line) throws BarryException {
         Task task;
         // Follow format from CS2103 iP task description
@@ -123,6 +159,14 @@ public class Storage {
         return task;
     }
 
+    /**
+     * Saves the given tasks to the save file.
+     *
+     * Overwrites any existing file contents. Creates the parent directory if necessary.
+     *
+     * @param tasks The tasks to save.
+     * @throws BarryException If writing fails due to an I/O error.
+     */
     public void save(TaskList tasks) throws BarryException {
         ensureParentDirExists();
 
@@ -136,6 +180,13 @@ public class Storage {
         }
     }
 
+    /**
+     * Converts a {@link Task} into a single-line representation suitable for saving to disk.
+     *
+     * @param task The task to convert.
+     * @return A pipe-separated line encoding the task.
+     * @throws BarryException If the task type is unknown and cannot be serialized.
+     */
     public String taskToLine(Task task) throws BarryException {
         String done = task.isDone() ? "1" : "0";
         final String SEPARATOR = " | ";
