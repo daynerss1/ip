@@ -1,10 +1,10 @@
 package barry.ui;
 
+import java.util.List;
+import java.util.Scanner;
+
 import barry.task.Task;
 import barry.task.TaskList;
-
-import java.util.Scanner;
-import java.util.List;
 
 /**
  * Handles all user-facing input/output for the Barry chatbot.

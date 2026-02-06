@@ -1,8 +1,9 @@
 package barry.task;
 
-import barry.exception.BarryException;
 import java.util.ArrayList;
 import java.util.List;
+
+import barry.exception.BarryException;
 
 /**
  * Represents the in-memory list of tasks managed by the Barry chatbot.
@@ -82,10 +83,19 @@ public class TaskList {
         }
     }
 
+    /**
+     * Helper class to ensure that the index of all tasks is 1-based.
+     */
     public static class IndexedTask {
         public final int index1Based;
         public final Task task;
 
+        /**
+         * Constructor for the IndexedTask class.
+         *
+         * @param index1Based 1-based index number of the task in the user's list.
+         * @param task The corresponding task in the list.
+         */
         public IndexedTask(int index1Based, Task task) {
             this.index1Based = index1Based;
             this.task = task;

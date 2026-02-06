@@ -1,18 +1,18 @@
 package barry;
 
-import barry.ui.Ui;
-import barry.storage.Storage;
-import barry.task.TaskList;
-import barry.task.Task;
-import barry.task.ToDo;
-import barry.task.Deadline;
-import barry.task.Event;
-import barry.parser.Parser;
-import barry.parser.ParsedInput;
-import barry.exception.BarryException;
-
 import java.util.Arrays;
 import java.util.List;
+
+import barry.exception.BarryException;
+import barry.parser.ParsedInput;
+import barry.parser.Parser;
+import barry.storage.Storage;
+import barry.task.Deadline;
+import barry.task.Event;
+import barry.task.Task;
+import barry.task.TaskList;
+import barry.task.ToDo;
+import barry.ui.Ui;
 
 /**
  * The main entry point and orchestrator for the Barry chatbot application.
