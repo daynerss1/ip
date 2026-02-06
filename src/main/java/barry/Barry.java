@@ -127,7 +127,7 @@ public class Barry {
         }
     }
 
-    private void handleMark(int[] nums) throws BarryException {
+    private void handleMark(int... nums) throws BarryException {
         for (int n : nums) {
             userList.checkIndex1Based(n);
             Task task = userList.get(n - 1);
@@ -136,7 +136,7 @@ public class Barry {
         }
     }
 
-    private void handleUnmark(int[] nums) throws BarryException {
+    private void handleUnmark(int... nums) throws BarryException {
         for (int n : nums) {
             userList.checkIndex1Based(n);
             Task task = userList.get(n - 1);
@@ -145,7 +145,7 @@ public class Barry {
         }
     }
 
-    private void handleDelete(int[] nums) throws BarryException {
+    private void handleDelete(int... nums) throws BarryException {
         int[] copy = Arrays.copyOf(nums, nums.length);
         Arrays.sort(copy);
 
