@@ -1,25 +1,22 @@
 package barry.storage;
 
-import barry.exception.BarryException;
-import barry.task.Task;
-import barry.task.ToDo;
-import barry.task.Deadline;
-import barry.task.Event;
-import barry.task.TaskList;
-
-import java.io.IOException;
 import java.io.FileWriter;
-
+import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
-
-import java.util.List;
-import java.util.ArrayList;
-
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+
+import barry.exception.BarryException;
+import barry.task.Deadline;
+import barry.task.Event;
+import barry.task.Task;
+import barry.task.TaskList;
+import barry.task.ToDo;
 
 /**
  * Represents the data file in the hard disk that stores the user's task list.
@@ -28,9 +25,9 @@ import java.time.format.DateTimeParseException;
  */
 
 public class Storage {
-    private final Path filePath;
     private static final DateTimeFormatter SAVE_DATE_TIME_FORMAT = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HHmm");
+    private final Path filePath;
 
     /**
      * Constructs a storage component that reads/writes tasks to a file.
@@ -49,8 +46,7 @@ public class Storage {
      * this method returns an empty task list.
      *
      * @return A list of tasks loaded from disk.
-     * @throws BarryException If the save file exists but cannot be read
-     * or contains corrupted lines.
+     * @throws BarryException If the save file exists but cannot be read or contains corrupted lines.
      */
     public ArrayList<Task> load() throws BarryException {
         ensureParentDirExists(); // throws BarryException if unable to create parent directory
@@ -81,8 +77,8 @@ public class Storage {
     public void ensureParentDirExists() throws BarryException {
         try {
             Path parent = filePath.getParent();
-            if (parent != null) {                   // if parent is null, there is no parent
-                Files.createDirectories(parent);    // directory to be created
+            if (parent != null) {
+                Files.createDirectories(parent);
             }
         } catch (IOException e) {
             throw new BarryException("Failed to create data folder: " + e.getMessage());
@@ -101,8 +97,7 @@ public class Storage {
      *
      * @param line A non-empty line from the save file.
      * @return A task constructed from the data in the line.
-     * @throws BarryException If the line format, done flag,
-     * or task type is invalid/corrupted.
+     * @throws BarryException If the line format, done flag, or task type is invalid/corrupted.
      */
     public Task parseLineToTasks(String line) throws BarryException {
         Task task;
@@ -189,22 +184,22 @@ public class Storage {
      */
     public String taskToLine(Task task) throws BarryException {
         String done = task.isDone() ? "1" : "0";
-        final String SEPARATOR = " | ";
+        final String separator = " | ";
 
         if (task instanceof ToDo) {
-            return "T" + SEPARATOR + done + SEPARATOR + task.getName();
+            return "T" + separator + done + separator + task.getName();
 
         } else if (task instanceof Deadline) {
             Deadline dlTask = (Deadline) task;
             String byString = dlTask.getBy().format(SAVE_DATE_TIME_FORMAT);
-            return "D" + SEPARATOR + done + SEPARATOR + dlTask.getName() + SEPARATOR + byString;
+            return "D" + separator + done + separator + dlTask.getName() + separator + byString;
 
         } else if (task instanceof Event) {
             Event eventTask = (Event) task;
             String startString = eventTask.getFrom().format(SAVE_DATE_TIME_FORMAT);
             String endString = eventTask.getTo().format(SAVE_DATE_TIME_FORMAT);
-            return "E" + SEPARATOR + done + SEPARATOR + eventTask.getName() + SEPARATOR
-                    + startString + SEPARATOR + endString;
+            return "E" + separator + done + separator + eventTask.getName() + separator
+                    + startString + separator + endString;
         } else {
             throw new BarryException("Unknown task type, unable to save.");
         }

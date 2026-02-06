@@ -1,22 +1,22 @@
 package barry.storage;
 
-import barry.exception.BarryException;
-import barry.task.Deadline;
-import barry.task.Event;
-import barry.task.Task;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import barry.exception.BarryException;
+import barry.task.Deadline;
+import barry.task.Event;
+import barry.task.Task;
 
 class StorageTest {
 
     @Test
-    void taskToLine_and_parseLine_roundTrip_deadline() throws Exception {
+    void taskToLineAndParseLine_roundTrip_deadline() throws Exception {
         Storage storage = new Storage("./data/test.txt"); // path won’t be used here
         LocalDateTime by = LocalDateTime.of(2026, 1, 30, 14, 0);
 
@@ -35,7 +35,7 @@ class StorageTest {
     }
 
     @Test
-    void taskToLine_and_parseLine_roundTrip_event() throws Exception {
+    void taskToLineAndParseLine_roundTrip_event() throws Exception {
         Storage storage = new Storage("./data/test.txt");
         LocalDateTime start = LocalDateTime.of(2026, 1, 30, 14, 0);
         LocalDateTime end = LocalDateTime.of(2026, 1, 30, 16, 0);
@@ -56,23 +56,23 @@ class StorageTest {
     void parseLine_corruptedType_throwsBarryException() {
         Storage storage = new Storage("./data/test.txt");
 
-        assertThrows(BarryException.class,
-                () -> storage.parseLineToTasks("X | 0 | something"));
+        assertThrows(BarryException.class, () -> storage
+                .parseLineToTasks("X | 0 | something"));
     }
 
     @Test
     void parseLine_corruptedDoneFlag_throwsBarryException() {
         Storage storage = new Storage("./data/test.txt");
 
-        assertThrows(BarryException.class,
-                () -> storage.parseLineToTasks("T | 9 | read book"));
+        assertThrows(BarryException.class, () -> storage
+                .parseLineToTasks("T | 9 | read book"));
     }
 
     @Test
     void parseLine_deadlineMissingDate_throwsBarryException() {
         Storage storage = new Storage("./data/test.txt");
 
-        assertThrows(BarryException.class,
-                () -> storage.parseLineToTasks("D | 0 | return book"));
+        assertThrows(BarryException.class, () -> storage
+                .parseLineToTasks("D | 0 | return book"));
     }
 }

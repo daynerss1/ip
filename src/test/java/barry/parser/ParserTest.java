@@ -1,19 +1,19 @@
 package barry.parser;
 
-import barry.exception.BarryException;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import barry.exception.BarryException;
 
 class ParserTest {
 
     @Test
-    void parse_deadline_validFormat_parsesCorrectly() throws Exception {
+    void parseDeadline_validFormat_parsesCorrectly() throws Exception {
         ParsedInput p = Parser.parse("deadline return book /by 2026-01-30 1400");
 
         assertEquals(Command.DEADLINE, p.type);
@@ -27,22 +27,22 @@ class ParserTest {
     }
 
     @Test
-    void parse_deadline_missingBy_throwsBarryException() {
-        BarryException e = assertThrows(BarryException.class,
-                () -> Parser.parse("deadline return book"));
+    void parseDeadline_missingBy_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("deadline return book"));
         assertTrue(e.getMessage().toLowerCase().contains("/by"));
     }
 
     @Test
-    void parse_event_endBeforeStart_throwsBarryException() {
-        BarryException e = assertThrows(BarryException.class,
-                () -> Parser.parse("event meeting /from 2026-01-30 1600 /to 2026-01-30 1500"));
+    void parseEvent_endBeforeStart_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("event meeting /from 2026-01-30 1600 /to 2026-01-30 1500"));
 
         assertTrue(e.getMessage().toLowerCase().contains("before"));
     }
 
     @Test
-    void parse_mark_multipleNumbers_parsesAll() throws Exception {
+    void parseMark_multipleNumbers_parsesAll() throws Exception {
         ParsedInput p = Parser.parse("mark 1 3 5");
 
         assertEquals(Command.MARK, p.type);
@@ -50,9 +50,9 @@ class ParserTest {
     }
 
     @Test
-    void parse_mark_nonInteger_throwsBarryException() {
-        BarryException e = assertThrows(BarryException.class,
-                () -> Parser.parse("mark a"));
+    void parseMark_nonInteger_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("mark a"));
 
         assertTrue(e.getMessage().toLowerCase().contains("integer"));
     }

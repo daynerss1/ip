@@ -1,10 +1,10 @@
 package barry.parser;
 
-import barry.exception.BarryException;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
+import barry.exception.BarryException;
 
 /**
  * Parses raw user command strings into structured {@link barry.parser.ParsedInput} objects.
@@ -27,8 +27,7 @@ public class Parser {
      *
      * @param input Raw command entered by the user.
      * @return A structured representation of the command and its arguments.
-     * @throws BarryException If the input is empty, the command is unknown,
-     * or the arguments are invalid.
+     * @throws BarryException If the input is empty, the command is unknown, or the arguments are invalid.
      */
     public static ParsedInput parse(String input) throws BarryException {
         if (input == null || input.trim().isEmpty()) {
