@@ -1,7 +1,6 @@
 package barry.ui;
 
 import java.util.List;
-import java.util.Scanner;
 
 import barry.task.Task;
 import barry.task.TaskList;
@@ -14,29 +13,28 @@ import barry.task.TaskList;
  */
 public class Ui {
     private static final String DIVIDER = "____________________________________________________________";
-    private final Scanner sc = new Scanner(System.in);
 
     /**
      * Displays the welcome message at the start of the program.
      */
-    public void showWelcome() {
-        System.out.println(DIVIDER + "\nHello! I'm Barry.\nWhat can I do for you?\n" + DIVIDER);
-    }
-
-    /**
-     * Reads a single line of user input.
-     *
-     * @return The trimmed command string entered by the user.
-     */
-    public String readCommand() {
-        return sc.nextLine().trim();
+    public String formatWelcome() {
+        return String.join("\n",
+                DIVIDER,
+                "Hello! I'm Barry.",
+                "What can I do for you?",
+                DIVIDER
+        );
     }
 
     /**
      * Displays the farewell message when the user exits the program.
      */
-    public void showBye() {
-        System.out.println(DIVIDER + "\nBye. Hope to see you again soon!\n" + DIVIDER);
+    public String formatBye() {
+        return String.join("\n",
+                DIVIDER,
+                "Bye. Hope to see you again soon!",
+                DIVIDER
+        );
     }
 
     /**
@@ -44,10 +42,10 @@ public class Ui {
      *
      * @param msg The error message to display.
      */
-    public void showError(String msg) {
-        System.out.println(DIVIDER);
-        System.out.println(msg);
-        System.out.println(DIVIDER);
+    public String formatError(String msg) {
+        return String.join("\n",
+                DIVIDER, msg, DIVIDER
+        );
     }
 
     /**
@@ -55,8 +53,8 @@ public class Ui {
      *
      * @param msg Details of the loading failure.
      */
-    public void showLoadingError(String msg) {
-        showError("Problem loading saved tasks: " + msg);
+    public String formatLoadingError(String msg) {
+        return formatError("Problem loading saved tasks: " + msg);
     }
 
     /**
@@ -65,12 +63,14 @@ public class Ui {
      * @param task The task that was added.
      * @param size The updated number of tasks in the list.
      */
-    public void showTaskAdded(Task task, int size) {
-        System.out.println(DIVIDER);
-        System.out.println("Got it. I've added this task:");
-        System.out.println(task.toString());
-        System.out.println("Now you have " + size + " tasks in the list.");
-        System.out.println(DIVIDER);
+    public String formatTaskAdded(Task task, int size) {
+        return String.join("\n",
+                DIVIDER,
+                "Got it. I've added this task:",
+                task.toString(),
+                "Now you have " + size + " tasks in the list.",
+                DIVIDER
+        );
     }
 
     /**
@@ -79,12 +79,14 @@ public class Ui {
      * @param task The task that was removed.
      * @param size The updated number of tasks in the list.
      */
-    public void showTaskDeleted(Task task, int size) {
-        System.out.println(DIVIDER);
-        System.out.println("Noted. I've removed this task:");
-        System.out.println(task.toString());
-        System.out.println("Now you have " + size + " tasks in the list.");
-        System.out.println(DIVIDER);
+    public String formatTaskDeleted(Task task, int size) {
+        return String.join("\n",
+                DIVIDER,
+                "Noted. I've removed this task:",
+                task.toString(),
+                "Now you have " + size + " tasks in the list.",
+                DIVIDER
+        );
     }
 
     /**
@@ -92,11 +94,13 @@ public class Ui {
      *
      * @param task The task that was marked.
      */
-    public void showTaskMarked(Task task) {
-        System.out.println(DIVIDER);
-        System.out.println("Nice! I've marked this task as done:");
-        System.out.println(task.toString());
-        System.out.println(DIVIDER);
+    public String formatTaskMarked(Task task) {
+        return String.join("\n",
+                DIVIDER,
+                "Nice! I've marked this task as done:",
+                task.toString(),
+                DIVIDER
+        );
     }
 
     /**
@@ -105,11 +109,13 @@ public class Ui {
      * @param task The task that was unmarked.
      */
 
-    public void showTaskUnmarked(Task task) {
-        System.out.println(DIVIDER);
-        System.out.println("OK, I've marked this task as not done yet:");
-        System.out.println(task.toString());
-        System.out.println(DIVIDER);
+    public String formatTaskUnmarked(Task task) {
+        return String.join("\n",
+                DIVIDER,
+                "OK, I've marked this task as not done yet:",
+                task.toString(),
+                DIVIDER
+        );
     }
 
     /**
@@ -117,17 +123,21 @@ public class Ui {
      *
      * @param tasks The task list to display.
      */
-    public void showTaskList(TaskList tasks) {
-        System.out.println(DIVIDER);
+    public String formatTaskList(TaskList tasks) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(DIVIDER).append("\n");
+
         if (tasks.size() == 0) {
-            System.out.println("Your task list is currently empty.\n" + DIVIDER);
-            return;
+            sb.append("Your task list is currently empty.\n");
+        } else {
+            sb.append("Here are the tasks in your list:\n");
+            for (int i = 0; i < tasks.size(); i++) {
+                sb.append(i + 1).append(".").append(tasks.get(i)).append("\n");
+            }
         }
-        System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println((i + 1) + "." + tasks.get(i).toString());
-        }
-        System.out.println(DIVIDER);
+
+        sb.append(DIVIDER);
+        return sb.toString();
     }
 
     /**
@@ -135,18 +145,22 @@ public class Ui {
      *
      * @param matches The list of tasks that matches the keyword specified, with their correct indexes.
      */
-    public void showFindResults(List<TaskList.IndexedTask> matches) {
-        System.out.println(DIVIDER);
+    public String formatFindResults(List<TaskList.IndexedTask> matches) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(DIVIDER).append("\n");
+
         if (matches.isEmpty()) {
-            System.out.println("No matching tasks found.");
-            System.out.println(DIVIDER);
-            return;
+            sb.append("No matching tasks found.\n");
+            sb.append(DIVIDER);
+            return sb.toString();
         }
 
-        System.out.println("Here are the matching tasks in your list:");
+        sb.append("Here are the matching tasks in your list:\n");
         for (TaskList.IndexedTask it : matches) {
-            System.out.println(it.index1Based + "." + it.task);
+            sb.append(it.index1Based).append(".").append(it.task).append("\n");
         }
-        System.out.println(DIVIDER);
+
+        sb.append(DIVIDER);
+        return sb.toString();
     }
 }

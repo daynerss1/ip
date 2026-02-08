@@ -118,7 +118,7 @@ public class Parser {
         }
         String byString = parts[1].trim();
         if (byString.isEmpty()) {
-            throw new BarryException("The Deadline's date/time cannot be empty."
+            throw new BarryException("The Deadline's date/time cannot be empty. "
                     + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.");
         }
 
@@ -132,7 +132,7 @@ public class Parser {
         }
         String[] parts = input.substring(6).split("/from", 2); // This is name + date/time
         if (parts.length == 1) {
-            throw new BarryException("An event needs a starting time!"
+            throw new BarryException("An event needs a starting time! "
                     + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.");
         }
         String name = parts[0].trim();

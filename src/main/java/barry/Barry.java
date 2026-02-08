@@ -1,7 +1,7 @@
 package barry;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import barry.exception.BarryException;
 import barry.parser.ParsedInput;
@@ -25,6 +25,7 @@ public class Barry {
     private final Ui ui;
     private final TaskList userList;
     private final Storage storage;
+    private String startupMessage = null;
 
     /**
      * Creates a new Barry chatbot instance.
@@ -33,7 +34,7 @@ public class Barry {
      * If loading fails (e.g., corrupted file),
      * Barry starts with an empty task list and reports the error to the user.
      *
-     * @param filePath Relative path to the save file (e.g.,"./data/barry.txt").
+     * @param filePath Relative path to the save file (e.g., "./data/barry.txt").
      */
     public Barry(String filePath) {
         this.ui = new Ui();
@@ -44,125 +45,135 @@ public class Barry {
             loaded = new TaskList(storage.load());
         } catch (BarryException e) {
             loaded = new TaskList();
-            ui.showLoadingError("Saved data was corrupted. Starting a new file. " + e.getMessage());
+            startupMessage = ui.formatLoadingError(
+                    "Saved data was corrupted. Starting a new file. "
+                            + e.getMessage()
+            );
         }
         this.userList = loaded;
     }
 
     /**
+     * Helps the FXML controller to print the welcome message.
+     * @return The welcome message.
+     */
+    public String getWelcomeMessage() {
+        return ui.formatWelcome();
+    }
+
+    /**
+     * Helps the FMXL controller to print the load error message, if applicable.
+     * @return the load error message, if any.
+     */
+    public String consumeStartupMessage() {
+        String msg = startupMessage;
+        startupMessage = null;
+        return msg;
+    }
+
+    /**
      * Runs the main interaction loop of the chatbot.
-     *
      * Reads user commands from the UI, parses them using {@link barry.parser.Parser},
      * executes the corresponding operations on the task list,
      * and saves changes via {@link barry.storage.Storage}
      * when the task list is modified.
      */
-    public void run() {
-        ui.showWelcome();
+    public String getResponse(String input) {
+        try {
+            ParsedInput p = Parser.parse(input);
 
-        boolean isRunning = true;
-        while (isRunning) {
-            try {
-                String input = ui.readCommand();
-                ParsedInput p = Parser.parse(input);
+            switch (p.type) {
+            case LIST:
+                return ui.formatTaskList(userList);
 
-                switch (p.type) {
-                case LIST: {
-                    ui.showTaskList(this.userList);
-                    break;
-                }
-                case TODO: {
-                    Task task = new ToDo(p.name);
-                    userList.add(task);
-                    ui.showTaskAdded(task, userList.size());
-                    storage.save(userList);
-                    break;
-                }
-                case DEADLINE: {
-                    Task task = new Deadline(p.name, p.by);
-                    userList.add(task);
-                    ui.showTaskAdded(task, userList.size());
-                    storage.save(userList);
-                    break;
-                }
-                case EVENT: {
-                    Task task = new Event(p.name, p.start, p.end);
-                    userList.add(task);
-                    ui.showTaskAdded(task, userList.size());
-                    storage.save(userList);
-                    break;
-                }
-                case MARK: {
-                    handleMark(p.taskNumbers);
-                    storage.save(userList);
-                    break;
-                }
-                case UNMARK: {
-                    handleUnmark(p.taskNumbers);
-                    storage.save(userList);
-                    break;
-                }
-                case DELETE: {
-                    handleDelete(p.taskNumbers);
-                    storage.save(userList);
-                    break;
-                }
-                case FIND: {
-                    List<TaskList.IndexedTask> matches = userList.findByKeyword(p.name);
-                    ui.showFindResults(matches);
-                    break;
-                }
-                case BYE: {
-                    ui.showBye();
-                    isRunning = false;
-                    break;
-                }
-                default:
-                    throw new BarryException("Invalid command: To add a new task, "
-                            + "start the command with 'todo', 'deadline', or 'event'");
-                }
-            } catch (BarryException e) {
-                ui.showError(e.getMessage());
+            case TODO: {
+                Task task = new ToDo(p.name);
+                userList.add(task);
+                storage.save(userList);
+                return ui.formatTaskAdded(task, userList.size());
             }
+
+            case DEADLINE: {
+                Task task = new Deadline(p.name, p.by);
+                userList.add(task);
+                storage.save(userList);
+                return ui.formatTaskAdded(task, userList.size());
+            }
+
+            case EVENT: {
+                Task task = new Event(p.name, p.start, p.end);
+                userList.add(task);
+                storage.save(userList);
+                return ui.formatTaskAdded(task, userList.size());
+            }
+
+            case MARK:
+                return handleMarkToString(p.taskNumbers);
+
+            case UNMARK:
+                return handleUnmarkToString(p.taskNumbers);
+
+            case DELETE:
+                return handleDeleteToString(p.taskNumbers);
+
+            case FIND:
+                return ui.formatFindResults(userList.findByKeyword(p.name));
+
+            case BYE:
+                return ui.formatBye();
+
+            default:
+                return ui.formatError("Unknown command.");
+            }
+        } catch (BarryException e) {
+            return ui.formatError(e.getMessage());
         }
     }
 
-    private void handleMark(int... nums) throws BarryException {
+    private String handleMarkToString(int... nums) throws BarryException {
+        StringBuilder sb = new StringBuilder();
         for (int n : nums) {
             userList.checkIndex1Based(n);
             Task task = userList.get(n - 1);
             task.mark();
-            ui.showTaskMarked(task);
+            sb.append(ui.formatTaskMarked(task)).append("\n");
         }
+        storage.save(userList);
+        return sb.toString().trim();
     }
 
-    private void handleUnmark(int... nums) throws BarryException {
+    private String handleUnmarkToString(int... nums) throws BarryException {
+        StringBuilder sb = new StringBuilder();
         for (int n : nums) {
             userList.checkIndex1Based(n);
             Task task = userList.get(n - 1);
             task.unmark();
-            ui.showTaskUnmarked(task);
+            sb.append(ui.formatTaskUnmarked(task)).append("\n");
         }
+        storage.save(userList);
+        return sb.toString().trim();
     }
 
-    private void handleDelete(int... nums) throws BarryException {
+    private String handleDeleteToString(int... nums) throws BarryException {
+        StringBuilder sb = new StringBuilder();
         int[] copy = Arrays.copyOf(nums, nums.length);
         Arrays.sort(copy);
+        ArrayList<String> outputPlaceholder = new ArrayList<>();
+        int initialSize = userList.size();
+        for (int n : nums) {
+            Task taskToDelete = userList.get(n - 1);
+            outputPlaceholder.add(ui.formatTaskDeleted(taskToDelete, --initialSize));
+        }
 
         for (int i = copy.length - 1; i >= 0; i--) {
             int n = copy[i];
             userList.checkIndex1Based(n);
-            Task removed = userList.remove(n - 1);
-            ui.showTaskDeleted(removed, userList.size());
+            userList.remove(n - 1);
         }
-    }
-
-    /**
-     * Entry point of the application.
-     *
-     * @param args Command-line arguments (unused).
-     */
-    public static void main(String[] args) {
-        new Barry("./data/barry.txt").run();
+        storage.save(userList);
+        for (String s : outputPlaceholder) {
+            sb.append(s);
+        }
+        return sb.toString().trim();
     }
 }
