@@ -33,7 +33,7 @@ public class Barry {
      * If loading fails (e.g., corrupted file),
      * Barry starts with an empty task list and reports the error to the user.
      *
-     * @param filePath Relative path to the save file (e.g.,"./data/barry.txt").
+     * @param filePath Relative path to the save file (e.g., "./data/barry.txt").
      */
     public Barry(String filePath) {
         this.ui = new Ui();
