@@ -13,6 +13,7 @@ import barry.exception.BarryException;
  * reducing direct manipulation of the underlying list by other components.</p>
  */
 public class TaskList {
+    private static final int INDEX_OFFSET = 1;
     private final ArrayList<Task> tasks;
 
     /**
@@ -36,7 +37,7 @@ public class TaskList {
      *
      * @param task The task to add.
      */
-    public void add(Task task) {
+    public void addTask(Task task) {
         tasks.add(task);
     }
 
@@ -44,11 +45,10 @@ public class TaskList {
      * Removes and returns the task at the specified 0-based index.
      *
      * @param index 0-based index of the task to remove.
-     * @return The removed task.
      * @throws IndexOutOfBoundsException If index is out of range.
      */
-    public Task remove(int index) {
-        return tasks.remove(index);
+    public void removeTask(int index) {
+        tasks.remove(index);
     }
 
     /**
@@ -58,7 +58,7 @@ public class TaskList {
      * @return The task at that position.
      * @throws IndexOutOfBoundsException If index is out of range.
      */
-    public Task get(int index) {
+    public Task getTask(int index) {
         return tasks.get(index);
     }
 
@@ -77,8 +77,8 @@ public class TaskList {
      * @param taskNum 1-based task number (e.g., 1 refers to the first task).
      * @throws BarryException If the task number is out of range.
      */
-    public void checkIndex1Based(int taskNum) throws BarryException {
-        if (taskNum < 1 || taskNum > size()) {
+    public void ensureIndexInRange1Based(int taskNum) throws BarryException {
+        if (taskNum < INDEX_OFFSET || taskNum > size()) {
             throw new BarryException("Task number out of range.");
         }
     }
@@ -114,10 +114,18 @@ public class TaskList {
 
         for (int i = 0; i < tasks.size(); i++) {
             Task t = tasks.get(i);
-            if (t.getName().toLowerCase().contains(key)) {
-                matches.add(new IndexedTask(i + 1, t));
+            if (matchesKeyword(t, key)) {
+                matches.add(toIndexedTask(i, t));
             }
         }
         return matches;
+    }
+
+    private boolean matchesKeyword(Task task, String keyword) {
+        return task.getName().toLowerCase().contains(keyword);
+    }
+
+    private IndexedTask toIndexedTask(int indexZeroBased, Task task) {
+        return new IndexedTask(indexZeroBased + INDEX_OFFSET, task);
     }
 }

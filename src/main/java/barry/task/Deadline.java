@@ -11,6 +11,9 @@ import java.time.format.DateTimeFormatter;
  */
 public class Deadline extends Task {
     private static final DateTimeFormatter FORMAT_OUT = DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm");
+    private static final String TASK_TYPE_ICON = "[D]";
+    private static final String LABEL_BY_PREFIX = " (by: ";
+    private static final String LABEL_END = ")";
     private final LocalDateTime deadline;
 
     /**
@@ -30,6 +33,11 @@ public class Deadline extends Task {
 
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " + deadline.format(FORMAT_OUT) + ")";
+        return TASK_TYPE_ICON + super.toString()
+                + LABEL_BY_PREFIX + formatDeadline(deadline) + LABEL_END;
+    }
+
+    private static String formatDeadline(LocalDateTime deadline) {
+        return deadline.format(FORMAT_OUT);
     }
 }
