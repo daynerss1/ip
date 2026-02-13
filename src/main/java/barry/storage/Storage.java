@@ -35,6 +35,7 @@ public class Storage {
      * @param filePath Relative path to the save file (e.g., {@code "./data/barry.txt"}).
      */
     public Storage(String filePath) {
+        assert filePath != null : "filePath must not be null";
         this.filePath = Paths.get(filePath);
     }
 
@@ -57,6 +58,7 @@ public class Storage {
 
         try {
             List<String> linesFromFile = Files.readAllLines(this.filePath);
+            assert linesFromFile != null : "lines from file must not be null";
             ArrayList<Task> tasks = new ArrayList<>();
             for (String line : linesFromFile) {
                 if (!line.trim().isEmpty()) {
@@ -100,9 +102,10 @@ public class Storage {
      * @throws BarryException If the line format, done flag, or task type is invalid/corrupted.
      */
     public Task parseLineToTasks(String line) throws BarryException {
+        assert line != null : "line must not be null";
         Task task;
-        // Follow format from CS2103 iP task description
         String[] parts = line.split("\\s*\\|\\s*"); // Split by " | "
+        assert parts.length >= 1 : "parts must not be empty";
         if (parts.length < 3) {
             throw new BarryException("Corrupted save file line: " + line);
         }
@@ -151,6 +154,7 @@ public class Storage {
             task.unmark();
         }
 
+        assert task != null : "task must not be null";
         return task;
     }
 
