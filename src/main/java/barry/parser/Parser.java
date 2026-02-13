@@ -19,7 +19,7 @@ public class Parser {
             DateTimeFormatter.ofPattern(INPUT_DATE_PATTERN);
     private static final String ERROR_EMPTY_INPUT = "Input command cannot be empty.";
     private static final String ERROR_INVALID_COMMAND = "Invalid command: Use 'todo', 'deadline', 'event', 'list', "
-            + "'mark', 'unmark', 'delete', or 'bye'";
+            + "'mark', 'unmark', 'delete', 'find', 'help', or 'bye'";
     private static final String ERROR_TODO_EMPTY = "Oops! The description of a ToDo cannot be empty.";
     private static final String ERROR_DEADLINE_EMPTY = "Oops! The description of a Deadline cannot be empty.";
     private static final String ERROR_DEADLINE_MISSING_BY = "You need to input a date for the deadline of this task! "
@@ -75,6 +75,8 @@ public class Parser {
         switch (firstWord) {
         case "list":
             return Command.LIST;
+        case "help":
+            return Command.HELP;
         case "todo":
             return Command.TODO;
         case "deadline":
@@ -99,7 +101,8 @@ public class Parser {
     private static ParsedInput parseByCommand(Command type, String input) throws BarryException {
         switch (type) {
         case LIST:
-        case BYE: // Intentional fallthrough as LIST and BYE require no arguments
+        case HELP:
+        case BYE: // Intentional fallthrough as LIST, HELP, and BYE require no arguments
             return ParsedInput.simple(type);
         case TODO:
             return parseTodo(input);
@@ -130,13 +133,16 @@ public class Parser {
         String remainder = extractRemainderAfterCommand(input, "deadline");
         assert remainder != null : "deadline remaining details must not be null";
         ensureNotEmpty(remainder, ERROR_DEADLINE_EMPTY);
+
         String[] parts = splitOnFlagOrThrow(remainder, "/by", ERROR_DEADLINE_MISSING_BY);
         String name = parts[0].trim();
         assert name != null : "deadline name must not be null";
         ensureNotEmpty(name, ERROR_DEADLINE_EMPTY);
+
         String byString = parts[1].trim();
         assert byString != null : "deadline by string must not be null";
         ensureNotEmpty(byString, ERROR_DEADLINE_BY_EMPTY);
+
         LocalDateTime by = parseDateTime(byString);
         return ParsedInput.deadline(name, by);
     }
@@ -145,17 +151,21 @@ public class Parser {
         String remainder = extractRemainderAfterCommand(input, "event");
         assert remainder != null : "event remaining details must not be null";
         ensureNotEmpty(remainder, ERROR_EVENT_EMPTY);
+
         String[] parts = splitOnFlagOrThrow(remainder, "/from", ERROR_EVENT_MISSING_FROM);
         String name = parts[0].trim();
         assert name != null : "event name must not be null";
         ensureNotEmpty(name, ERROR_EVENT_EMPTY);
+
         String[] times = splitOnFlagOrThrow(parts[1], "/to", ERROR_EVENT_MISSING_TO);
         String startString = times[0].trim();
         assert startString != null : "event start string must not be null";
         ensureNotEmpty(startString, ERROR_EVENT_START_EMPTY);
+
         String endString = times[1].trim();
         assert endString != null : "event end string must not be null";
         ensureNotEmpty(endString, ERROR_EVENT_END_EMPTY);
+
         LocalDateTime start = parseDateTime(startString);
         LocalDateTime end = parseDateTime(endString);
         if (end.isBefore(start)) {

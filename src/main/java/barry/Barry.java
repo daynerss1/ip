@@ -1,5 +1,6 @@
 package barry;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,10 +23,13 @@ import barry.ui.Ui;
  * It runs the main input loop, executes user commands, and saves tasks whenever the list changes.</p>
  */
 public class Barry {
+    private static final String SAMPLE_TASK_BOOTSTRAP_MESSAGE =
+            "Looks like this is your first run. I loaded a few sample tasks to get you started.";
     private final Ui ui;
     private final TaskList userList;
     private final Storage storage;
     private String startupMessage = null;
+    private boolean shouldUseShortWelcome = false;
 
     /**
      * Creates a new Barry chatbot instance.
@@ -47,8 +51,18 @@ public class Barry {
     }
 
     private TaskList loadTaskListFromStorage() {
+        boolean isFirstRun = !storage.dataFileExists();
         try {
-            return new TaskList(storage.load());
+            TaskList loadedTasks = new TaskList(storage.load());
+            if (isFirstRun && loadedTasks.size() == 0) {
+                seedSampleTasks(loadedTasks);
+                shouldUseShortWelcome = true;
+                startupMessage = ui.formatStartupInfo(
+                        SAMPLE_TASK_BOOTSTRAP_MESSAGE,
+                        "Type 'help' to view all commands."
+                );
+            }
+            return loadedTasks;
         } catch (BarryException e) {
             startupMessage = ui.formatLoadingError("Saved data was corrupted. Starting a new file. "
                     + e.getMessage()
@@ -62,6 +76,9 @@ public class Barry {
      * @return The welcome message.
      */
     public String getWelcomeMessage() {
+        if (shouldUseShortWelcome) {
+            return ui.formatWelcomeShort();
+        }
         return ui.formatWelcome();
     }
 
@@ -97,6 +114,8 @@ public class Barry {
         switch (parsedInput.type) {
         case LIST:
             return handleList();
+        case HELP:
+            return handleHelp();
         case TODO:
             return handleToDo(parsedInput);
         case DEADLINE:
@@ -120,6 +139,10 @@ public class Barry {
 
     private String handleList() {
         return ui.formatTaskList(userList);
+    }
+
+    private String handleHelp() {
+        return ui.formatHelp();
     }
 
     private String handleToDo(ParsedInput parsedInput) throws BarryException {
@@ -178,6 +201,15 @@ public class Barry {
 
     private void saveTasks() throws BarryException {
         storage.save(userList);
+    }
+
+    private void seedSampleTasks(TaskList tasks) throws BarryException {
+        assert tasks != null : "tasks must not be null";
+        tasks.addTask(new ToDo("Explore the command list with 'help'"));
+        tasks.addTask(new Deadline("Submit your first real task", LocalDateTime.of(2026, 12, 31, 18, 0)));
+        tasks.addTask(new Event("Plan your week", LocalDateTime.of(2026, 12, 20, 9, 0),
+                LocalDateTime.of(2026, 12, 20, 10, 0)));
+        storage.save(tasks);
     }
 
     private void validateTaskNumbers(int[] nums) throws BarryException {

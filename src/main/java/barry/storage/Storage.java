@@ -57,6 +57,15 @@ public class Storage {
     }
 
     /**
+     * Returns whether the data file already exists on disk.
+     *
+     * @return true if the data file path exists, otherwise false.
+     */
+    public boolean dataFileExists() {
+        return Files.exists(filePath);
+    }
+
+    /**
      * Loads tasks from the save file.
      * If the parent directory does not exist, it will be created.
      * If the save file does not exist,

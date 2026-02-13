@@ -56,5 +56,11 @@ class ParserTest {
 
         assertTrue(e.getMessage().toLowerCase().contains("integer"));
     }
-}
 
+    @Test
+    void parseHelp_noArguments_parsesCorrectly() throws Exception {
+        ParsedInput p = Parser.parse("help");
+
+        assertEquals(Command.HELP, p.type);
+    }
+}
