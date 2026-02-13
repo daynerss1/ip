@@ -1,6 +1,8 @@
 package barry.ui;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import barry.task.Task;
 import barry.task.TaskList;
@@ -131,9 +133,10 @@ public class Ui {
             sb.append("Your task list is currently empty.\n");
         } else {
             sb.append("Here are the tasks in your list:\n");
-            for (int i = 0; i < tasks.size(); i++) {
-                sb.append(i + 1).append(".").append(tasks.get(i)).append("\n");
-            }
+            String body = IntStream.range(0, tasks.size())
+                    .mapToObj(i -> (i + 1) + "." + tasks.get(i))
+                    .collect(Collectors.joining("\n", "", "\n"));
+            sb.append(body);
         }
 
         sb.append(DIVIDER);
@@ -156,9 +159,10 @@ public class Ui {
         }
 
         sb.append("Here are the matching tasks in your list:\n");
-        for (TaskList.IndexedTask it : matches) {
-            sb.append(it.index1Based).append(".").append(it.task).append("\n");
-        }
+        String body = matches.stream()
+                .map(it -> it.index1Based + "." + it.task)
+                .collect(Collectors.joining("\n", "", "\n"));
+        sb.append(body);
 
         sb.append(DIVIDER);
         return sb.toString();
