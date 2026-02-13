@@ -182,11 +182,11 @@ public class Ui {
     }
 
     private void appendTasks(StringBuilder sb, List<Task> tasks) {
-    String body = tasks.stream()
-            .map(Object::toString)
-            .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
-    sb.append(body);
-}
+        String body = tasks.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
+        sb.append(body);
+    }
 
     private String formatWithDivider(String... lines) {
         StringBuilder sb = new StringBuilder();
