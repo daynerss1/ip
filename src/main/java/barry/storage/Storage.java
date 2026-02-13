@@ -33,6 +33,7 @@ public class Storage {
     private static final String TYPE_DEADLINE = "D";
     private static final String TYPE_EVENT = "E";
     private static final String FIELD_SEPARATOR = " | ";
+    private static final String INITIAL_FILE_CREATION_MESSAGE = "No data file exists yet. Starting an empty task list!";
     private static final String ERROR_LOAD_FAILED = "Failed to load saved tasks: ";
     private static final String ERROR_CREATE_FOLDER_FAILED = "Failed to create data folder: ";
     private static final String ERROR_CORRUPTED_LINE = "Corrupted save file line: ";
@@ -89,7 +90,7 @@ public class Storage {
     private List<String> readAllLinesOrEmpty() throws BarryException {
         // Guard condition if file path does not exist yet.
         if (!Files.exists(this.filePath)) {
-            System.out.println("No data file exists yet. Starting an empty task list!");
+            System.out.println(INITIAL_FILE_CREATION_MESSAGE);
             return new ArrayList<>();
         }
 
