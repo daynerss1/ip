@@ -37,6 +37,7 @@ public class Barry {
      * @param filePath Relative path to the save file (e.g., "./data/barry.txt").
      */
     public Barry(String filePath) {
+        assert filePath != null : "filePath must not be null";
         this.ui = new Ui();
         this.storage = new Storage(filePath);
 
@@ -51,6 +52,9 @@ public class Barry {
             );
         }
         this.userList = loaded;
+        assert ui != null : "ui must not be null";
+        assert storage != null : "storage must not be null";
+        assert userList != null : "userList must not be null";
     }
 
     /**
@@ -81,6 +85,8 @@ public class Barry {
     public String getResponse(String input) {
         try {
             ParsedInput p = Parser.parse(input);
+            assert p != null : "parsed input must not be null";
+            assert p.type != null : "parsed input type must not be null";
 
             switch (p.type) {
             case LIST:
@@ -131,8 +137,10 @@ public class Barry {
     }
 
     private String handleMarkToString(int... nums) throws BarryException {
+        assert nums != null : "task numbers must not be null";
         StringBuilder sb = new StringBuilder();
         for (int n : nums) {
+            assert n > 0 : "task numbers must be positive";
             userList.checkIndex1Based(n);
             Task task = userList.get(n - 1);
             task.mark();
@@ -143,8 +151,10 @@ public class Barry {
     }
 
     private String handleUnmarkToString(int... nums) throws BarryException {
+        assert nums != null : "task numbers must not be null";
         StringBuilder sb = new StringBuilder();
         for (int n : nums) {
+            assert n > 0 : "task numbers must be positive";
             userList.checkIndex1Based(n);
             Task task = userList.get(n - 1);
             task.unmark();
@@ -155,18 +165,21 @@ public class Barry {
     }
 
     private String handleDeleteToString(int... nums) throws BarryException {
+        assert nums != null : "task numbers must not be null";
         StringBuilder sb = new StringBuilder();
         int[] copy = Arrays.copyOf(nums, nums.length);
         Arrays.sort(copy);
         ArrayList<String> outputPlaceholder = new ArrayList<>();
         int initialSize = userList.size();
         for (int n : nums) {
+            assert n > 0 : "task numbers must be positive";
             Task taskToDelete = userList.get(n - 1);
             outputPlaceholder.add(ui.formatTaskDeleted(taskToDelete, --initialSize));
         }
 
         for (int i = copy.length - 1; i >= 0; i--) {
             int n = copy[i];
+            assert n > 0 : "task numbers must be positive";
             userList.checkIndex1Based(n);
             userList.remove(n - 1);
         }
