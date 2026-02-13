@@ -40,6 +40,7 @@ public class Ui {
      * @param msg The error message to display.
      */
     public String formatError(String msg) {
+        assert msg != null : "error message must not be null";
         return formatWithDivider(msg);
     }
 
@@ -49,6 +50,7 @@ public class Ui {
      * @param msg Details of the loading failure.
      */
     public String formatLoadingError(String msg) {
+        assert msg != null : "loading error message must not be null";
         return formatError("Problem loading saved tasks: " + msg);
     }
 
@@ -59,6 +61,7 @@ public class Ui {
      * @param size The updated number of tasks in the list.
      */
     public String formatTaskAdded(Task task, int size) {
+        assert task != null : "task must not be null";
         return formatWithDivider(
                 "Got it. I've added this task:",
                 task.toString(),
@@ -73,6 +76,7 @@ public class Ui {
      * @param tasks The tasks that were removed.
      */
     public String formatTaskDeleted(int size, List<Task> tasks) {
+        assert tasks != null : "tasks must not be null";
         String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
 
         return formatMultipleTasksWithSummary(
@@ -88,6 +92,7 @@ public class Ui {
      * @param tasks The tasks that were marked.
      */
     public String formatTaskMarked(List<Task> tasks) {
+        assert tasks != null : "tasks must not be null";
         String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
 
         return formatMultipleTasks(
@@ -102,6 +107,7 @@ public class Ui {
      * @param tasks The tasks that were unmarked.
      */
     public String formatTaskUnmarked(List<Task> tasks) {
+        assert tasks != null : "tasks must not be null";
         String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
 
         return formatMultipleTasks(
@@ -116,6 +122,7 @@ public class Ui {
      * @param tasks The task list to display.
      */
     public String formatTaskList(TaskList tasks) {
+        assert tasks != null : "tasks must not be null";
         StringBuilder sb = new StringBuilder();
         sb.append(DIVIDER).append(LINE_SEPARATOR);
 
@@ -135,6 +142,7 @@ public class Ui {
      * @param matches The list of tasks that matches the keyword specified, with their correct indexes.
      */
     public String formatFindResults(List<TaskList.IndexedTask> matches) {
+        assert matches != null : "matches must not be null";
         if (matches.isEmpty()) {
             return formatWithDivider("No matching tasks found.");
         }
@@ -149,6 +157,8 @@ public class Ui {
     }
 
     private void appendTaskList(StringBuilder sb, TaskList tasks) {
+        assert sb != null : "string builder must not be null";
+        assert tasks != null : "tasks must not be null";
         String body = IntStream.range(0, tasks.size())
                     .mapToObj(i -> (i + 1) + "." + tasks.getTask(i))
                     .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
@@ -156,6 +166,8 @@ public class Ui {
     }
 
     private void appendMatches(StringBuilder sb, List<TaskList.IndexedTask> matches) {
+        assert sb != null : "string builder must not be null";
+        assert matches != null : "matches must not be null";
         String body = matches.stream()
                 .map(indexedTask -> indexedTask.index1Based + "." + indexedTask.task)
                 .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
@@ -163,6 +175,8 @@ public class Ui {
     }
 
     private String formatMultipleTasks(String header, List<Task> tasks) {
+        assert header != null : "header must not be null";
+        assert tasks != null : "tasks must not be null";
         StringBuilder sb = new StringBuilder();
         sb.append(DIVIDER).append(LINE_SEPARATOR);
         sb.append(header).append(LINE_SEPARATOR);
@@ -172,6 +186,9 @@ public class Ui {
     }
 
     private String formatMultipleTasksWithSummary(String header, String summary, List<Task> tasks) {
+        assert header != null : "header must not be null";
+        assert summary != null : "summary must not be null";
+        assert tasks != null : "tasks must not be null";
         StringBuilder sb = new StringBuilder();
         sb.append(DIVIDER).append(LINE_SEPARATOR);
         sb.append(header).append(LINE_SEPARATOR);
@@ -182,6 +199,8 @@ public class Ui {
     }
 
     private void appendTasks(StringBuilder sb, List<Task> tasks) {
+        assert sb != null : "string builder must not be null";
+        assert tasks != null : "tasks must not be null";
         String body = tasks.stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
@@ -189,6 +208,7 @@ public class Ui {
     }
 
     private String formatWithDivider(String... lines) {
+        assert lines != null : "lines must not be null";
         StringBuilder sb = new StringBuilder();
         sb.append(DIVIDER).append(LINE_SEPARATOR);
         for (String line : lines) {

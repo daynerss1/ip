@@ -121,12 +121,4 @@ public class TaskList {
                 .mapToObj(i -> new IndexedTask(i + 1, tasks.get(i)))
                 .collect(Collectors.toList());
     }
-
-    private boolean matchesKeyword(Task task, String keyword) {
-        return task.getName().toLowerCase().contains(keyword);
-    }
-
-    private IndexedTask toIndexedTask(int indexZeroBased, Task task) {
-        return new IndexedTask(indexZeroBased + INDEX_OFFSET, task);
-    }
 }

@@ -171,13 +171,13 @@ public class Storage {
             case TYPE_DEADLINE:
                 // Deadline has 4 parts: type, doneState, description, byDate
                 ensureMinimumParts(parts, 4, ERROR_CORRUPTED_DEADLINE + line);
-                LocalDateTime by = parseSavedDateTime(parts[3].trim(), line);
+                LocalDateTime by = parseSavedDateTime(parts[3].trim());
                 return new Deadline(desc, by);
             case TYPE_EVENT:
                 // Event has 5 parts: type, doneState, description, startDate, endDate
                 ensureMinimumParts(parts, 5, ERROR_CORRUPTED_EVENT + line);
-                LocalDateTime start = parseSavedDateTime(parts[3].trim(), line);
-                LocalDateTime end = parseSavedDateTime(parts[4].trim(), line);
+                LocalDateTime start = parseSavedDateTime(parts[3].trim());
+                LocalDateTime end = parseSavedDateTime(parts[4].trim());
                 return new Event(desc, start, end);
             default:
                 throw new BarryException(ERROR_UNKNOWN_TASK_TYPE + line);
@@ -252,7 +252,7 @@ public class Storage {
         throw new BarryException(ERROR_UNKNOWN_TASK_TYPE_SAVE);
     }
 
-    private LocalDateTime parseSavedDateTime(String value, String line) {
+    private LocalDateTime parseSavedDateTime(String value) {
         return LocalDateTime.parse(value, SAVE_DATE_TIME_FORMAT);
     }
 
