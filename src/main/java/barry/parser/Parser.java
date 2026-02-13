@@ -33,6 +33,7 @@ public class Parser {
         if (input == null || input.trim().isEmpty()) {
             throw new BarryException("Input command cannot be empty.");
         }
+        assert input != null : "input must not be null";
 
         Command type = getCommandType(input);
 
@@ -65,6 +66,7 @@ public class Parser {
 
     private static Command getCommandType(String input) throws BarryException {
         String firstWord = input.split("\\s+")[0].toLowerCase();
+        assert !firstWord.isEmpty() : "command word must not be empty";
 
         switch (firstWord) {
         case "list":
@@ -96,6 +98,7 @@ public class Parser {
             throw new BarryException("Oops! The description of a ToDo cannot be empty.");
         } else {
             String name = input.substring(5);
+            assert name != null : "todo name must not be null";
             if (name.isEmpty()) {
                 throw new BarryException("Oops! The description of a ToDo cannot be empty.");
             }
@@ -108,6 +111,7 @@ public class Parser {
             throw new BarryException("Oops! The description of a Deadline cannot be empty.");
         }
         String[] parts = input.substring(9).split("/by", 2);
+        assert parts.length >= 1 : "deadline parts must not be empty";
         if (parts.length == 1) {
             throw new BarryException("You need to input a date for the deadline of this task! "
                     + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.");
@@ -131,6 +135,7 @@ public class Parser {
             throw new BarryException("Oops! The description of an Event cannot be empty.");
         }
         String[] parts = input.substring(6).split("/from", 2); // This is name + date/time
+        assert parts.length >= 1 : "event parts must not be empty";
         if (parts.length == 1) {
             throw new BarryException("An event needs a starting time! "
                     + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.");
@@ -140,6 +145,7 @@ public class Parser {
             throw new BarryException("Oops! The description of an Event cannot be empty.");
         }
         String[] times = parts[1].split("/to", 2);
+        assert times.length >= 1 : "event times must not be empty";
         if (times.length == 1) {
             throw new BarryException("An event needs an end time! "
                     + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.");
@@ -184,6 +190,7 @@ public class Parser {
         }
 
         String keyword = input.substring(5).trim(); // after "find "
+        assert keyword != null : "find keyword must not be null";
         if (keyword.isEmpty()) {
             throw new BarryException("Find what? Please provide a keyword.");
         }
@@ -192,6 +199,7 @@ public class Parser {
     }
 
     private static LocalDateTime parseDateTime(String s) throws BarryException {
+        assert s != null : "date time string must not be null";
         try {
             return LocalDateTime.parse(s.trim(), IN_DATE_FORMAT);
         } catch (DateTimeParseException e) {
