@@ -1,6 +1,8 @@
 package barry.ui;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import barry.task.Task;
 import barry.task.TaskList;
@@ -119,12 +121,10 @@ public class Ui {
 
         if (tasks.size() == 0) {
             sb.append("Your task list is currently empty.").append(LINE_SEPARATOR);
-            sb.append(DIVIDER);
-            return sb.toString();
+        } else {
+            sb.append("Here are the tasks in your list:").append(LINE_SEPARATOR);
+            appendTaskList(sb, tasks);
         }
-
-        sb.append("Here are the tasks in your list:").append(LINE_SEPARATOR);
-        appendTaskList(sb, tasks);
         sb.append(DIVIDER);
         return sb.toString();
     }
@@ -149,16 +149,17 @@ public class Ui {
     }
 
     private void appendTaskList(StringBuilder sb, TaskList tasks) {
-        for (int i = 0; i < tasks.size(); i++) {
-            sb.append(i + 1).append(".").append(tasks.getTask(i)).append(LINE_SEPARATOR);
-        }
+        String body = IntStream.range(0, tasks.size())
+                    .mapToObj(i -> (i + 1) + "." + tasks.getTask(i))
+                    .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
+        sb.append(body);
     }
 
     private void appendMatches(StringBuilder sb, List<TaskList.IndexedTask> matches) {
-        for (TaskList.IndexedTask indexedTask : matches) {
-            sb.append(indexedTask.index1Based).append(".")
-                    .append(indexedTask.task).append(LINE_SEPARATOR);
-        }
+        String body = matches.stream()
+                .map(indexedTask -> indexedTask.index1Based + "." + indexedTask.task)
+                .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
+        sb.append(body);
     }
 
     private String formatMultipleTasks(String header, List<Task> tasks) {
@@ -181,10 +182,11 @@ public class Ui {
     }
 
     private void appendTasks(StringBuilder sb, List<Task> tasks) {
-        for (Task task : tasks) {
-            sb.append(task).append(LINE_SEPARATOR);
-        }
-    }
+    String body = tasks.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
+    sb.append(body);
+}
 
     private String formatWithDivider(String... lines) {
         StringBuilder sb = new StringBuilder();

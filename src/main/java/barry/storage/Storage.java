@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import barry.exception.BarryException;
 import barry.task.Deadline;
@@ -102,13 +103,17 @@ public class Storage {
     }
 
     private ArrayList<Task> parseTasksFromLines(List<String> linesFromFile) throws BarryException {
-        ArrayList<Task> tasks = new ArrayList<>();
-        for (String line : linesFromFile) {
-            if (!line.trim().isEmpty()) {
-                tasks.add(parseLineToTasks(line));
+        try {
+            return linesFromFile.stream()
+                    .filter(line -> !line.trim().isEmpty())
+                    .map(this::parseLineToTasksUnchecked)
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof BarryException) {
+                throw (BarryException) e.getCause();
             }
+            throw e;
         }
-        return tasks;
     }
 
     /**
@@ -193,6 +198,14 @@ public class Storage {
         // Default task on loading is a new, unmarked Task object.
         if (isDone) {
             task.mark();
+        }
+    }
+
+    private Task parseLineToTasksUnchecked(String line) {
+        try {
+            return parseLineToTasks(line);
+        } catch (BarryException e) {
+            throw new RuntimeException(e);
         }
     }
 
