@@ -2,6 +2,8 @@ package barry.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import barry.exception.BarryException;
 
@@ -110,14 +112,9 @@ public class TaskList {
      */
     public List<IndexedTask> findByKeyword(String keyword) {
         String key = keyword.toLowerCase();
-        List<IndexedTask> matches = new ArrayList<>();
-
-        for (int i = 0; i < tasks.size(); i++) {
-            Task t = tasks.get(i);
-            if (t.getName().toLowerCase().contains(key)) {
-                matches.add(new IndexedTask(i + 1, t));
-            }
-        }
-        return matches;
+        return IntStream.range(0, tasks.size())
+                .filter(i -> tasks.get(i).getName().toLowerCase().contains(key))
+                .mapToObj(i -> new IndexedTask(i + 1, tasks.get(i)))
+                .collect(Collectors.toList());
     }
 }
