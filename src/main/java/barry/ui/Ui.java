@@ -15,16 +15,15 @@ import barry.task.TaskList;
  */
 public class Ui {
     private static final String DIVIDER = "____________________________________________________________";
+    private static final String LINE_SEPARATOR = System.lineSeparator();
 
     /**
      * Displays the welcome message at the start of the program.
      */
     public String formatWelcome() {
-        return String.join("\n",
-                DIVIDER,
+        return formatWithDivider(
                 "Hello! I'm Barry.",
-                "What can I do for you?",
-                DIVIDER
+                "What can I do for you?"
         );
     }
 
@@ -32,11 +31,7 @@ public class Ui {
      * Displays the farewell message when the user exits the program.
      */
     public String formatBye() {
-        return String.join("\n",
-                DIVIDER,
-                "Bye. Hope to see you again soon!",
-                DIVIDER
-        );
+        return formatWithDivider("Bye. Hope to see you again soon!");
     }
 
     /**
@@ -45,9 +40,7 @@ public class Ui {
      * @param msg The error message to display.
      */
     public String formatError(String msg) {
-        return String.join("\n",
-                DIVIDER, msg, DIVIDER
-        );
+        return formatWithDivider(msg);
     }
 
     /**
@@ -66,57 +59,54 @@ public class Ui {
      * @param size The updated number of tasks in the list.
      */
     public String formatTaskAdded(Task task, int size) {
-        return String.join("\n",
-                DIVIDER,
+        return formatWithDivider(
                 "Got it. I've added this task:",
                 task.toString(),
-                "Now you have " + size + " tasks in the list.",
-                DIVIDER
+                "Now you have " + size + " tasks in the list."
         );
     }
 
     /**
-     * Displays a message indicating a task was deleted successfully.
+     * Displays a message indicating tasks were deleted successfully.
      *
-     * @param task The task that was removed.
      * @param size The updated number of tasks in the list.
+     * @param tasks The tasks that were removed.
      */
-    public String formatTaskDeleted(Task task, int size) {
-        return String.join("\n",
-                DIVIDER,
-                "Noted. I've removed this task:",
-                task.toString(),
+    public String formatTaskDeleted(int size, List<Task> tasks) {
+        String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
+
+        return formatMultipleTasksWithSummary(
+                "Noted. I've removed " + modifier + " :",
                 "Now you have " + size + " tasks in the list.",
-                DIVIDER
+                tasks
         );
     }
 
     /**
-     * Displays a message indicating a task was marked as done.
+     * Displays a message indicating tasks were marked as done.
      *
-     * @param task The task that was marked.
+     * @param tasks The tasks that were marked.
      */
-    public String formatTaskMarked(Task task) {
-        return String.join("\n",
-                DIVIDER,
-                "Nice! I've marked this task as done:",
-                task.toString(),
-                DIVIDER
+    public String formatTaskMarked(List<Task> tasks) {
+        String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
+
+        return formatMultipleTasks(
+                "Nice! I've marked " + modifier + " as done:",
+                tasks
         );
     }
 
     /**
-     * Displays a message indicating a task was unmarked (set as not done).
+     * Displays a message indicating tasks were unmarked (set as not done).
      *
-     * @param task The task that was unmarked.
+     * @param tasks The tasks that were unmarked.
      */
+    public String formatTaskUnmarked(List<Task> tasks) {
+        String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
 
-    public String formatTaskUnmarked(Task task) {
-        return String.join("\n",
-                DIVIDER,
-                "OK, I've marked this task as not done yet:",
-                task.toString(),
-                DIVIDER
+        return formatMultipleTasks(
+                "OK, I've marked " + modifier + " as not done yet:",
+                tasks
         );
     }
 
@@ -127,18 +117,14 @@ public class Ui {
      */
     public String formatTaskList(TaskList tasks) {
         StringBuilder sb = new StringBuilder();
-        sb.append(DIVIDER).append("\n");
+        sb.append(DIVIDER).append(LINE_SEPARATOR);
 
         if (tasks.size() == 0) {
-            sb.append("Your task list is currently empty.\n");
+            sb.append("Your task list is currently empty.").append(LINE_SEPARATOR);
         } else {
-            sb.append("Here are the tasks in your list:\n");
-            String body = IntStream.range(0, tasks.size())
-                    .mapToObj(i -> (i + 1) + "." + tasks.get(i))
-                    .collect(Collectors.joining("\n", "", "\n"));
-            sb.append(body);
+            sb.append("Here are the tasks in your list:").append(LINE_SEPARATOR);
+            appendTaskList(sb, tasks);
         }
-
         sb.append(DIVIDER);
         return sb.toString();
     }
@@ -149,21 +135,65 @@ public class Ui {
      * @param matches The list of tasks that matches the keyword specified, with their correct indexes.
      */
     public String formatFindResults(List<TaskList.IndexedTask> matches) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(DIVIDER).append("\n");
-
         if (matches.isEmpty()) {
-            sb.append("No matching tasks found.\n");
-            sb.append(DIVIDER);
-            return sb.toString();
+            return formatWithDivider("No matching tasks found.");
         }
 
-        sb.append("Here are the matching tasks in your list:\n");
-        String body = matches.stream()
-                .map(it -> it.index1Based + "." + it.task)
-                .collect(Collectors.joining("\n", "", "\n"));
-        sb.append(body);
+        StringBuilder sb = new StringBuilder();
+        sb.append(DIVIDER).append(LINE_SEPARATOR);
+        sb.append("Here are the matching tasks in your list:").append(LINE_SEPARATOR);
+        appendMatches(sb, matches);
 
+        sb.append(DIVIDER);
+        return sb.toString();
+    }
+
+    private void appendTaskList(StringBuilder sb, TaskList tasks) {
+        String body = IntStream.range(0, tasks.size())
+                    .mapToObj(i -> (i + 1) + "." + tasks.getTask(i))
+                    .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
+        sb.append(body);
+    }
+
+    private void appendMatches(StringBuilder sb, List<TaskList.IndexedTask> matches) {
+        String body = matches.stream()
+                .map(indexedTask -> indexedTask.index1Based + "." + indexedTask.task)
+                .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
+        sb.append(body);
+    }
+
+    private String formatMultipleTasks(String header, List<Task> tasks) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(DIVIDER).append(LINE_SEPARATOR);
+        sb.append(header).append(LINE_SEPARATOR);
+        appendTasks(sb, tasks);
+        sb.append(DIVIDER);
+        return sb.toString();
+    }
+
+    private String formatMultipleTasksWithSummary(String header, String summary, List<Task> tasks) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(DIVIDER).append(LINE_SEPARATOR);
+        sb.append(header).append(LINE_SEPARATOR);
+        appendTasks(sb, tasks);
+        sb.append(summary).append(LINE_SEPARATOR);
+        sb.append(DIVIDER);
+        return sb.toString();
+    }
+
+    private void appendTasks(StringBuilder sb, List<Task> tasks) {
+    String body = tasks.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(LINE_SEPARATOR, "", LINE_SEPARATOR));
+    sb.append(body);
+}
+
+    private String formatWithDivider(String... lines) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(DIVIDER).append(LINE_SEPARATOR);
+        for (String line : lines) {
+            sb.append(line).append(LINE_SEPARATOR);
+        }
         sb.append(DIVIDER);
         return sb.toString();
     }

@@ -12,6 +12,10 @@ import java.time.format.DateTimeFormatter;
 public class Event extends Task {
     private static final DateTimeFormatter FORMAT_OUT = DateTimeFormatter
             .ofPattern("MMM dd yyyy HH:mm");
+    private static final String TASK_TYPE_ICON = "[E]";
+    private static final String LABEL_FROM_PREFIX = " (from: ";
+    private static final String LABEL_TO_PREFIX = " to: ";
+    private static final String LABEL_END = ")";
     private final LocalDateTime start;
     private final LocalDateTime end;
 
@@ -24,6 +28,8 @@ public class Event extends Task {
      */
     public Event(String name, LocalDateTime start, LocalDateTime end) {
         super(name);
+        assert start != null : "start must not be null";
+        assert end != null : "end must not be null";
         this.start = start;
         this.end = end;
     }
@@ -38,8 +44,13 @@ public class Event extends Task {
 
     @Override
     public String toString() {
-        return "[E]" + super.toString() + " (from: "
-                + start.format(FORMAT_OUT) + " to: "
-                + end.format(FORMAT_OUT) + ")";
+        return TASK_TYPE_ICON + super.toString()
+                + LABEL_FROM_PREFIX + formatEventTime(start)
+                + LABEL_TO_PREFIX + formatEventTime(end)
+                + LABEL_END;
+    }
+
+    private static String formatEventTime(LocalDateTime time) {
+        return time.format(FORMAT_OUT);
     }
 }

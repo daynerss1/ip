@@ -37,20 +37,24 @@ public class Barry {
      * @param filePath Relative path to the save file (e.g., "./data/barry.txt").
      */
     public Barry(String filePath) {
+        assert filePath != null : "filePath must not be null";
         this.ui = new Ui();
         this.storage = new Storage(filePath);
+        this.userList = loadTaskListFromStorage();
+        assert ui != null : "ui must not be null";
+        assert storage != null : "storage must not be null";
+        assert userList != null : "userList must not be null";
+    }
 
-        TaskList loaded;
+    private TaskList loadTaskListFromStorage() {
         try {
-            loaded = new TaskList(storage.load());
+            return new TaskList(storage.load());
         } catch (BarryException e) {
-            loaded = new TaskList();
-            startupMessage = ui.formatLoadingError(
-                    "Saved data was corrupted. Starting a new file. "
-                            + e.getMessage()
+            startupMessage = ui.formatLoadingError("Saved data was corrupted. Starting a new file. "
+                    + e.getMessage()
             );
+            return new TaskList();
         }
-        this.userList = loaded;
     }
 
     /**
@@ -80,100 +84,152 @@ public class Barry {
      */
     public String getResponse(String input) {
         try {
-            ParsedInput p = Parser.parse(input);
-
-            switch (p.type) {
-            case LIST:
-                return ui.formatTaskList(userList);
-
-            case TODO: {
-                Task task = new ToDo(p.name);
-                userList.add(task);
-                storage.save(userList);
-                return ui.formatTaskAdded(task, userList.size());
-            }
-
-            case DEADLINE: {
-                Task task = new Deadline(p.name, p.by);
-                userList.add(task);
-                storage.save(userList);
-                return ui.formatTaskAdded(task, userList.size());
-            }
-
-            case EVENT: {
-                Task task = new Event(p.name, p.start, p.end);
-                userList.add(task);
-                storage.save(userList);
-                return ui.formatTaskAdded(task, userList.size());
-            }
-
-            case MARK:
-                return handleMarkToString(p.taskNumbers);
-
-            case UNMARK:
-                return handleUnmarkToString(p.taskNumbers);
-
-            case DELETE:
-                return handleDeleteToString(p.taskNumbers);
-
-            case FIND:
-                return ui.formatFindResults(userList.findByKeyword(p.name));
-
-            case BYE:
-                return ui.formatBye();
-
-            default:
-                return ui.formatError("Unknown command.");
-            }
+            ParsedInput parsedInput = Parser.parse(input);
+            assert parsedInput != null : "parsed input must not be null";
+            assert parsedInput.type != null : "parsed input type must not be null";
+            return handleCommand(parsedInput);
         } catch (BarryException e) {
             return ui.formatError(e.getMessage());
         }
     }
 
-    private String handleMarkToString(int... nums) throws BarryException {
-        StringBuilder sb = new StringBuilder();
+    private String handleCommand(ParsedInput parsedInput) throws BarryException {
+        switch (parsedInput.type) {
+        case LIST:
+            return handleList();
+        case TODO:
+            return handleToDo(parsedInput);
+        case DEADLINE:
+            return handleDeadline(parsedInput);
+        case EVENT:
+            return handleEvent(parsedInput);
+        case MARK:
+            return handleMark(parsedInput.taskNumbers);
+        case UNMARK:
+            return handleUnmark(parsedInput.taskNumbers);
+        case DELETE:
+            return handleDelete(parsedInput.taskNumbers);
+        case FIND:
+            return handleFind(parsedInput);
+        case BYE:
+            return handleBye();
+        default:
+            return ui.formatError("Unknown command");
+        }
+    }
+
+    private String handleList() {
+        return ui.formatTaskList(userList);
+    }
+
+    private String handleToDo(ParsedInput parsedInput) throws BarryException {
+        Task task = new ToDo(parsedInput.name);
+        return addTaskAndRespond(task);
+    }
+
+    private String handleDeadline(ParsedInput parsedInput) throws BarryException {
+        Task task = new Deadline(parsedInput.name, parsedInput.by);
+        return addTaskAndRespond(task);
+    }
+
+    private String handleEvent(ParsedInput parsedInput) throws BarryException {
+        Task task = new Event(parsedInput.name, parsedInput.start, parsedInput.end);
+        return addTaskAndRespond(task);
+    }
+
+    private String handleMark(int... nums) throws BarryException {
+        validateTaskNumbers(nums);
+        ArrayList<Task> markedTasks = markTasks(nums);
+        saveTasks();
+        return ui.formatTaskMarked(markedTasks);
+    }
+
+    private String handleUnmark(int... nums) throws BarryException {
+        validateTaskNumbers(nums);
+        ArrayList<Task> unmarkedTasks = unmarkTasks(nums);
+        saveTasks();
+        return ui.formatTaskUnmarked(unmarkedTasks);
+    }
+
+    private String handleDelete(int... nums) throws BarryException {
+        validateTaskNumbers(nums);
+        int[] sortedNums = sortTaskNumbers(nums);
+        ArrayList<Task> tasksToDelete = collectTasksForDeletion(nums);
+        int initialSize = userList.size();
+        deleteTasksInReverse(sortedNums);
+        saveTasks();
+        int updatedSize = initialSize - tasksToDelete.size();
+        return ui.formatTaskDeleted(updatedSize, tasksToDelete);
+    }
+
+    private String handleFind(ParsedInput parsedInput) {
+        return ui.formatFindResults(userList.findByKeyword(parsedInput.name));
+    }
+
+    private String handleBye() {
+        return ui.formatBye();
+    }
+
+    private String addTaskAndRespond(Task task) throws BarryException {
+        userList.addTask(task);
+        saveTasks();
+        return ui.formatTaskAdded(task, userList.size());
+    }
+
+    private void saveTasks() throws BarryException {
+        storage.save(userList);
+    }
+
+    private void validateTaskNumbers(int[] nums) throws BarryException {
+        assert nums != null : "task numbers must not be null";
         for (int n : nums) {
-            userList.checkIndex1Based(n);
-            Task task = userList.get(n - 1);
+            assert n > 0 : "task numbers must be positive";
+            userList.ensureIndexInRange1Based(n);
+        }
+    }
+
+    private Task getTaskByNumber(int number) {
+        return userList.getTask(number - 1);
+    }
+
+    private ArrayList<Task> markTasks(int... nums) {
+        ArrayList<Task> marked = new ArrayList<>();
+        for (int n : nums) {
+            Task task = getTaskByNumber(n);
             task.mark();
-            sb.append(ui.formatTaskMarked(task)).append("\n");
+            marked.add(task);
         }
-        storage.save(userList);
-        return sb.toString().trim();
+        return marked;
     }
 
-    private String handleUnmarkToString(int... nums) throws BarryException {
-        StringBuilder sb = new StringBuilder();
+    private ArrayList<Task> unmarkTasks(int... nums) {
+        ArrayList<Task> unmarked = new ArrayList<>();
         for (int n : nums) {
-            userList.checkIndex1Based(n);
-            Task task = userList.get(n - 1);
+            Task task = getTaskByNumber(n);
             task.unmark();
-            sb.append(ui.formatTaskUnmarked(task)).append("\n");
+            unmarked.add(task);
         }
-        storage.save(userList);
-        return sb.toString().trim();
+        return unmarked;
     }
 
-    private String handleDeleteToString(int... nums) throws BarryException {
-        StringBuilder sb = new StringBuilder();
+    private int[] sortTaskNumbers(int... nums) {
         int[] copy = Arrays.copyOf(nums, nums.length);
         Arrays.sort(copy);
-        ArrayList<String> outputPlaceholder = new ArrayList<>();
-        int initialSize = userList.size();
-        for (int n : nums) {
-            Task taskToDelete = userList.get(n - 1);
-            outputPlaceholder.add(ui.formatTaskDeleted(taskToDelete, --initialSize));
-        }
+        return copy;
+    }
 
-        for (int i = copy.length - 1; i >= 0; i--) {
-            int n = copy[i];
-            userList.checkIndex1Based(n);
-            userList.remove(n - 1);
+    private ArrayList<Task> collectTasksForDeletion(int... nums) {
+        ArrayList<Task> tasksToDelete = new ArrayList<>();
+        for (int n : nums) {
+            tasksToDelete.add(getTaskByNumber(n));
         }
-        storage.save(userList);
-        for (String s : outputPlaceholder) {
-            sb.append(s);
+        return tasksToDelete;
+    }
+
+    private void deleteTasksInReverse(int... sortedNums) {
+        for (int i = sortedNums.length - 1; i >= 0; i--) {
+            int n = sortedNums[i];
+            userList.removeTask(n - 1);
         }
-        return sb.toString().trim();
     }
 }

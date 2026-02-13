@@ -7,7 +7,9 @@ package barry.task;
  * Subclasses such as {@code ToDo}, {@code Deadline}, and {@code Event} extend this class
  * to include task-type-specific data while reusing the common done/undone behavior.</p>
  */
-public class Task {
+public abstract class Task {
+    private static final String DONE_MARK = "X";
+    private static final String UNDONE_MARK = " ";
     private final String name;
     private boolean done;
 
@@ -17,6 +19,7 @@ public class Task {
      * @param name Task description.
      */
     public Task(String name) {
+        assert name != null : "name must not be null";
         this.name = name;
         this.done = false;
     }
@@ -39,7 +42,7 @@ public class Task {
 
     @Override
     public String toString() {
-        String completion = this.done ? "X" : " ";
+        String completion = this.done ? DONE_MARK : UNDONE_MARK;
         return "[" + completion + "] " + this.name;
     }
 }

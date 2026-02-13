@@ -6,6 +6,7 @@ package barry.task;
  * <p>A {@code ToDo} has no associated date/time; it is simply an item the user intends to do.</p>
  */
 public class ToDo extends Task {
+    private static final String TASK_TYPE_ICON = "[T]";
 
     /**
      * Constructs a ToDo task with the given description.
@@ -18,6 +19,6 @@ public class ToDo extends Task {
 
     @Override
     public String toString() {
-        return "[T]" + super.toString();
+        return TASK_TYPE_ICON + super.toString();
     }
 }

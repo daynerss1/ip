@@ -14,8 +14,34 @@ import barry.exception.BarryException;
  * {@code /from}, {@code /to}, and date/time formats).
  */
 public class Parser {
+    private static final String INPUT_DATE_PATTERN = "yyyy-MM-dd HHmm";
     private static final DateTimeFormatter IN_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+            DateTimeFormatter.ofPattern(INPUT_DATE_PATTERN);
+    private static final String ERROR_EMPTY_INPUT = "Input command cannot be empty.";
+    private static final String ERROR_INVALID_COMMAND = "Invalid command: Use 'todo', 'deadline', 'event', 'list', "
+            + "'mark', 'unmark', 'delete', or 'bye'";
+    private static final String ERROR_TODO_EMPTY = "Oops! The description of a ToDo cannot be empty.";
+    private static final String ERROR_DEADLINE_EMPTY = "Oops! The description of a Deadline cannot be empty.";
+    private static final String ERROR_DEADLINE_MISSING_BY = "You need to input a date for the deadline of this task! "
+            + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.";
+    private static final String ERROR_DEADLINE_BY_EMPTY = "The Deadline's date/time cannot be empty. "
+            + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.";
+    private static final String ERROR_EVENT_EMPTY = "Oops! The description of an Event cannot be empty.";
+    private static final String ERROR_EVENT_MISSING_FROM = "An event needs a starting time! "
+            + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.";
+    private static final String ERROR_EVENT_MISSING_TO = "An event needs an end time! "
+            + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.";
+    private static final String ERROR_EVENT_START_EMPTY = "Start time cannot be empty! "
+            + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.";
+    private static final String ERROR_EVENT_END_EMPTY = "End time cannot be empty! "
+            + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.";
+    private static final String ERROR_EVENT_END_BEFORE_START =
+            "Event's end time cannot be before its start time!";
+    private static final String ERROR_NUMBERS_REQUIRED = "You must specify at least one task number.";
+    private static final String ERROR_NUMBERS_NOT_INTEGER = "Task numbers must be integers.";
+    private static final String ERROR_FIND_EMPTY = "Find what? Please provide a keyword.";
+    private static final String ERROR_INVALID_DATE_TIME =
+            "Invalid date/time. Use yyyy-MM-dd HHmm (e.g., 2026-01-30 1400).";
 
     /**
      * Parses a raw user command string into a structured {@link ParsedInput}.
@@ -30,41 +56,21 @@ public class Parser {
      * @throws BarryException If the input is empty, the command is unknown, or the arguments are invalid.
      */
     public static ParsedInput parse(String input) throws BarryException {
-        if (input == null || input.trim().isEmpty()) {
-            throw new BarryException("Input command cannot be empty.");
-        }
-
-        Command type = getCommandType(input);
-
-        switch (type) {
-        case LIST:
-        case BYE:
-            return ParsedInput.simple(type);
-        // fall through since LIST and BYE do not require additional parameters
-        case TODO:
-            return parseTodo(input);
-
-        case DEADLINE:
-            return parseDeadline(input);
-
-        case EVENT:
-            return parseEvent(input);
-
-        case FIND:
-            return parseFind(input);
-
-        case MARK:
-        case UNMARK:
-        case DELETE:
-            return parseNumbers(type, input);
-        // fall through since MARK, UNMARK, and DELETE all require additional parsing of index numbers
-        default:
-            throw new BarryException("Unknown command.");
-        }
+        ensureInputIsNotBlank(input);
+        Command type = parseCommandWord(input);
+        return parseByCommand(type, input);
     }
 
-    private static Command getCommandType(String input) throws BarryException {
+    private static void ensureInputIsNotBlank(String input) throws BarryException {
+        if (input == null || input.trim().isEmpty()) {
+            throw new BarryException(ERROR_EMPTY_INPUT);
+        }
+        assert input != null : "input must not be null";
+    }
+
+    private static Command parseCommandWord(String input) throws BarryException {
         String firstWord = input.split("\\s+")[0].toLowerCase();
+        assert !firstWord.isEmpty() : "command word must not be empty";
 
         switch (firstWord) {
         case "list":
@@ -86,80 +92,74 @@ public class Parser {
         case "find":
             return Command.FIND;
         default:
-            throw new BarryException("Invalid command: Use 'todo', 'deadline', 'event', 'list', 'mark', "
-                    + "'unmark', 'delete', or 'bye'");
+            throw new BarryException(ERROR_INVALID_COMMAND);
+        }
+    }
+
+    private static ParsedInput parseByCommand(Command type, String input) throws BarryException {
+        switch (type) {
+        case LIST:
+        case BYE: // Intentional fallthrough as LIST and BYE require no arguments
+            return ParsedInput.simple(type);
+        case TODO:
+            return parseTodo(input);
+        case DEADLINE:
+            return parseDeadline(input);
+        case EVENT:
+            return parseEvent(input);
+        case FIND:
+            return parseFind(input);
+        case MARK:
+        case UNMARK:
+        case DELETE: // Intentional fallthrough as MARK, UNMARK, and DELETE require the same processing.
+            return parseNumbers(type, input);
+        default:
+            throw new BarryException(ERROR_INVALID_COMMAND); // Defensive;
+            // check is also done in parseCommandWord method.
         }
     }
 
     private static ParsedInput parseTodo(String input) throws BarryException {
-        if (input.trim().equalsIgnoreCase("todo")) {
-            throw new BarryException("Oops! The description of a ToDo cannot be empty.");
-        } else {
-            String name = input.substring(5);
-            if (name.isEmpty()) {
-                throw new BarryException("Oops! The description of a ToDo cannot be empty.");
-            }
-            return ParsedInput.todo(name);
-        }
+        String name = extractRemainderAfterCommand(input, "todo");
+        assert name != null : "todo name must not be null";
+        ensureNotEmpty(name, ERROR_TODO_EMPTY);
+        return ParsedInput.todo(name);
     }
 
     private static ParsedInput parseDeadline(String input) throws BarryException {
-        if (input.trim().equalsIgnoreCase("deadline")) {
-            throw new BarryException("Oops! The description of a Deadline cannot be empty.");
-        }
-        String[] parts = input.substring(9).split("/by", 2);
-        if (parts.length == 1) {
-            throw new BarryException("You need to input a date for the deadline of this task! "
-                    + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.");
-        }
+        String remainder = extractRemainderAfterCommand(input, "deadline");
+        assert remainder != null : "deadline remaining details must not be null";
+        ensureNotEmpty(remainder, ERROR_DEADLINE_EMPTY);
+        String[] parts = splitOnFlagOrThrow(remainder, "/by", ERROR_DEADLINE_MISSING_BY);
         String name = parts[0].trim();
-        if (name.isEmpty()) {
-            throw new BarryException("Oops! The description of a Deadline cannot be empty.");
-        }
+        assert name != null : "deadline name must not be null";
+        ensureNotEmpty(name, ERROR_DEADLINE_EMPTY);
         String byString = parts[1].trim();
-        if (byString.isEmpty()) {
-            throw new BarryException("The Deadline's date/time cannot be empty. "
-                    + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.");
-        }
-
+        assert byString != null : "deadline by string must not be null";
+        ensureNotEmpty(byString, ERROR_DEADLINE_BY_EMPTY);
         LocalDateTime by = parseDateTime(byString);
         return ParsedInput.deadline(name, by);
     }
 
     private static ParsedInput parseEvent(String input) throws BarryException {
-        if (input.trim().equalsIgnoreCase("event")) {
-            throw new BarryException("Oops! The description of an Event cannot be empty.");
-        }
-        String[] parts = input.substring(6).split("/from", 2); // This is name + date/time
-        if (parts.length == 1) {
-            throw new BarryException("An event needs a starting time! "
-                    + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.");
-        }
+        String remainder = extractRemainderAfterCommand(input, "event");
+        assert remainder != null : "event remaining details must not be null";
+        ensureNotEmpty(remainder, ERROR_EVENT_EMPTY);
+        String[] parts = splitOnFlagOrThrow(remainder, "/from", ERROR_EVENT_MISSING_FROM);
         String name = parts[0].trim();
-        if (name.isEmpty()) {
-            throw new BarryException("Oops! The description of an Event cannot be empty.");
-        }
-        String[] times = parts[1].split("/to", 2);
-        if (times.length == 1) {
-            throw new BarryException("An event needs an end time! "
-                    + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.");
-        }
+        assert name != null : "event name must not be null";
+        ensureNotEmpty(name, ERROR_EVENT_EMPTY);
+        String[] times = splitOnFlagOrThrow(parts[1], "/to", ERROR_EVENT_MISSING_TO);
         String startString = times[0].trim();
+        assert startString != null : "event start string must not be null";
+        ensureNotEmpty(startString, ERROR_EVENT_START_EMPTY);
         String endString = times[1].trim();
-
-        if (startString.isEmpty()) {
-            throw new BarryException("Start time cannot be empty! "
-                    + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.");
-        }
-        if (endString.isEmpty()) {
-            throw new BarryException("End time cannot be empty! "
-                    + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.");
-        }
-
+        assert endString != null : "event end string must not be null";
+        ensureNotEmpty(endString, ERROR_EVENT_END_EMPTY);
         LocalDateTime start = parseDateTime(startString);
         LocalDateTime end = parseDateTime(endString);
         if (end.isBefore(start)) {
-            throw new BarryException("Event's end time cannot be before its start time!");
+            throw new BarryException(ERROR_EVENT_END_BEFORE_START);
         }
 
         return ParsedInput.event(name, start, end);
@@ -168,7 +168,7 @@ public class Parser {
     private static ParsedInput parseNumbers(Command type, String input) throws BarryException {
         String[] tokens = input.trim().split("\\s+");
         if (tokens.length <= 1) {
-            throw new BarryException("You must specify at least one task number.");
+            throw new BarryException(ERROR_NUMBERS_REQUIRED);
         }
         int[] nums = new int[tokens.length - 1];
         for (int i = 1; i < tokens.length; i++) {
@@ -179,23 +179,40 @@ public class Parser {
     }
 
     private static ParsedInput parseFind(String input) throws BarryException {
-        if (input.trim().equalsIgnoreCase("find")) {
-            throw new BarryException("Find what? Please provide a keyword.");
-        }
-
-        String keyword = input.substring(5).trim(); // after "find "
-        if (keyword.isEmpty()) {
-            throw new BarryException("Find what? Please provide a keyword.");
-        }
-
+        String keyword = extractRemainderAfterCommand(input, "find");
+        assert keyword != null : "find keyword must not be null";
+        ensureNotEmpty(keyword, ERROR_FIND_EMPTY);
         return ParsedInput.find(keyword);
     }
 
     private static LocalDateTime parseDateTime(String s) throws BarryException {
+        assert s != null : "date time string must not be null";
         try {
             return LocalDateTime.parse(s.trim(), IN_DATE_FORMAT);
         } catch (DateTimeParseException e) {
-            throw new BarryException("Invalid date/time. Use yyyy-MM-dd HHmm (e.g., 2026-01-30 1400).");
+            throw new BarryException(ERROR_INVALID_DATE_TIME);
+        }
+    }
+
+    private static String extractRemainderAfterCommand(String input, String commandWord) {
+        String trimmed = input.trim();
+        if (trimmed.length() <= commandWord.length()) {
+            return "";
+        }
+        return trimmed.substring(commandWord.length()).trim();
+    }
+
+    private static String[] splitOnFlagOrThrow(String input, String flag, String errorMessage) throws BarryException {
+        String[] parts = input.split(flag, 2);
+        if (parts.length < 2) {
+            throw new BarryException(errorMessage);
+        }
+        return parts;
+    }
+
+    private static void ensureNotEmpty(String value, String errorMessage) throws BarryException {
+        if (value == null || value.isEmpty()) {
+            throw new BarryException(errorMessage);
         }
     }
 
@@ -203,7 +220,7 @@ public class Parser {
         try {
             return Integer.parseInt(s.trim());
         } catch (NumberFormatException e) {
-            throw new BarryException("Task numbers must be integers.");
+            throw new BarryException(ERROR_NUMBERS_NOT_INTEGER);
         }
     }
 }
