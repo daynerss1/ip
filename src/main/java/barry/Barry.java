@@ -37,9 +37,13 @@ public class Barry {
      * @param filePath Relative path to the save file (e.g., "./data/barry.txt").
      */
     public Barry(String filePath) {
+        assert filePath != null : "filePath must not be null";
         this.ui = new Ui();
         this.storage = new Storage(filePath);
         this.userList = loadTaskListFromStorage();
+        assert ui != null : "ui must not be null";
+        assert storage != null : "storage must not be null";
+        assert userList != null : "userList must not be null";
     }
 
     private TaskList loadTaskListFromStorage() {
@@ -81,6 +85,8 @@ public class Barry {
     public String getResponse(String input) {
         try {
             ParsedInput parsedInput = Parser.parse(input);
+            assert parsedInput != null : "parsed input must not be null";
+            assert parsedInput.type != null : "parsed input type must not be null";
             return handleCommand(parsedInput);
         } catch (BarryException e) {
             return ui.formatError(e.getMessage());
@@ -175,7 +181,9 @@ public class Barry {
     }
 
     private void validateTaskNumbers(int[] nums) throws BarryException {
+        assert nums != null : "task numbers must not be null";
         for (int n : nums) {
+            assert n > 0 : "task numbers must be positive";
             userList.ensureIndexInRange1Based(n);
         }
     }
@@ -224,5 +232,4 @@ public class Barry {
             userList.removeTask(n - 1);
         }
     }
-
 }

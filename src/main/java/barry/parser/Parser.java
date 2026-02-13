@@ -38,6 +38,7 @@ public class Parser {
     private static final String ERROR_EVENT_END_BEFORE_START =
             "Event's end time cannot be before its start time!";
     private static final String ERROR_NUMBERS_REQUIRED = "You must specify at least one task number.";
+    private static final String ERROR_NUMBERS_NOT_INTEGER = "Task numbers must be integers.";
     private static final String ERROR_FIND_EMPTY = "Find what? Please provide a keyword.";
     private static final String ERROR_INVALID_DATE_TIME =
             "Invalid date/time. Use yyyy-MM-dd HHmm (e.g., 2026-01-30 1400).";
@@ -64,10 +65,13 @@ public class Parser {
         if (input == null || input.trim().isEmpty()) {
             throw new BarryException(ERROR_EMPTY_INPUT);
         }
+        assert input != null : "input must not be null";
     }
 
     private static Command parseCommandWord(String input) throws BarryException {
         String firstWord = input.split("\\s+")[0].toLowerCase();
+        assert !firstWord.isEmpty() : "command word must not be empty";
+
         switch (firstWord) {
         case "list":
             return Command.LIST;
@@ -117,17 +121,21 @@ public class Parser {
 
     private static ParsedInput parseTodo(String input) throws BarryException {
         String name = extractRemainderAfterCommand(input, "todo");
+        assert name != null : "todo name must not be null";
         ensureNotEmpty(name, ERROR_TODO_EMPTY);
         return ParsedInput.todo(name);
     }
 
     private static ParsedInput parseDeadline(String input) throws BarryException {
         String remainder = extractRemainderAfterCommand(input, "deadline");
+        assert remainder != null : "deadline remaining details must not be null";
         ensureNotEmpty(remainder, ERROR_DEADLINE_EMPTY);
         String[] parts = splitOnFlagOrThrow(remainder, "/by", ERROR_DEADLINE_MISSING_BY);
         String name = parts[0].trim();
+        assert name != null : "deadline name must not be null";
         ensureNotEmpty(name, ERROR_DEADLINE_EMPTY);
         String byString = parts[1].trim();
+        assert byString != null : "deadline by string must not be null";
         ensureNotEmpty(byString, ERROR_DEADLINE_BY_EMPTY);
         LocalDateTime by = parseDateTime(byString);
         return ParsedInput.deadline(name, by);
@@ -135,14 +143,18 @@ public class Parser {
 
     private static ParsedInput parseEvent(String input) throws BarryException {
         String remainder = extractRemainderAfterCommand(input, "event");
+        assert remainder != null : "event remaining details must not be null";
         ensureNotEmpty(remainder, ERROR_EVENT_EMPTY);
         String[] parts = splitOnFlagOrThrow(remainder, "/from", ERROR_EVENT_MISSING_FROM);
         String name = parts[0].trim();
+        assert name != null : "event name must not be null";
         ensureNotEmpty(name, ERROR_EVENT_EMPTY);
         String[] times = splitOnFlagOrThrow(parts[1], "/to", ERROR_EVENT_MISSING_TO);
         String startString = times[0].trim();
+        assert startString != null : "event start string must not be null";
         ensureNotEmpty(startString, ERROR_EVENT_START_EMPTY);
         String endString = times[1].trim();
+        assert endString != null : "event end string must not be null";
         ensureNotEmpty(endString, ERROR_EVENT_END_EMPTY);
         LocalDateTime start = parseDateTime(startString);
         LocalDateTime end = parseDateTime(endString);
@@ -168,11 +180,13 @@ public class Parser {
 
     private static ParsedInput parseFind(String input) throws BarryException {
         String keyword = extractRemainderAfterCommand(input, "find");
+        assert keyword != null : "find keyword must not be null";
         ensureNotEmpty(keyword, ERROR_FIND_EMPTY);
         return ParsedInput.find(keyword);
     }
 
     private static LocalDateTime parseDateTime(String s) throws BarryException {
+        assert s != null : "date time string must not be null";
         try {
             return LocalDateTime.parse(s.trim(), IN_DATE_FORMAT);
         } catch (DateTimeParseException e) {
@@ -206,7 +220,7 @@ public class Parser {
         try {
             return Integer.parseInt(s.trim());
         } catch (NumberFormatException e) {
-            throw new BarryException("Task numbers must be integers.");
+            throw new BarryException(ERROR_NUMBERS_NOT_INTEGER);
         }
     }
 }

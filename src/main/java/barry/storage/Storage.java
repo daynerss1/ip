@@ -23,7 +23,6 @@ import barry.task.ToDo;
  * Automatically loads the data in the file when the driver is started, and automatically
  * updates the save file whenever the task list changes.
  */
-
 public class Storage {
     private static final String SAVE_DATE_TIME_PATTERN = "yyyy-MM-dd HHmm";
     private static final DateTimeFormatter SAVE_DATE_TIME_FORMAT = DateTimeFormatter
@@ -34,6 +33,7 @@ public class Storage {
     private static final String TYPE_DEADLINE = "D";
     private static final String TYPE_EVENT = "E";
     private static final String FIELD_SEPARATOR = " | ";
+    private static final String INITIAL_FILE_CREATION_MESSAGE = "No data file exists yet. Starting an empty task list!";
     private static final String ERROR_LOAD_FAILED = "Failed to load saved tasks: ";
     private static final String ERROR_CREATE_FOLDER_FAILED = "Failed to create data folder: ";
     private static final String ERROR_CORRUPTED_LINE = "Corrupted save file line: ";
@@ -51,6 +51,7 @@ public class Storage {
      * @param filePath Relative path to the save file (e.g., {@code "./data/barry.txt"}).
      */
     public Storage(String filePath) {
+        assert filePath != null : "filePath must not be null";
         this.filePath = Paths.get(filePath);
     }
 
@@ -66,6 +67,7 @@ public class Storage {
     public ArrayList<Task> load() throws BarryException {
         ensureParentDirectoryExists();
         List<String> linesFromFile = readAllLinesOrEmpty();
+        assert linesFromFile != null : "lines from file must not be null";
         return parseTasksFromLines(linesFromFile);
     }
 
@@ -88,7 +90,7 @@ public class Storage {
     private List<String> readAllLinesOrEmpty() throws BarryException {
         // Guard condition if file path does not exist yet.
         if (!Files.exists(this.filePath)) {
-            System.out.println("No data file exists yet. Starting an empty task list!");
+            System.out.println(INITIAL_FILE_CREATION_MESSAGE);
             return new ArrayList<>();
         }
 
@@ -123,15 +125,18 @@ public class Storage {
      * @throws BarryException If the line format, done flag, or task type is invalid/corrupted.
      */
     public Task parseLineToTasks(String line) throws BarryException {
+        assert line != null : "line must not be null";
         String[] parts = splitSaveLine(line);
         boolean isDone = parseDoneFlag(parts[1].trim(), line);
         Task task = parseTaskFromParts(parts, line);
+        assert task != null : "task must not be null";
         applyDoneState(task, isDone);
         return task;
     }
 
     private String[] splitSaveLine(String line) throws BarryException {
         String[] parts = line.split("\\s*\\|\\s*");
+        assert parts.length >= 1 : "parts must not be empty";
 
         // All lines have at least these 3 parts: type | doneState | description.
         if (parts.length < 3) {
@@ -184,6 +189,7 @@ public class Storage {
     }
 
     private void applyDoneState(Task task, boolean isDone) {
+        assert task != null : "task must not be null";
         // Default task on loading is a new, unmarked Task object.
         if (isDone) {
             task.mark();
