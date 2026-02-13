@@ -5,6 +5,7 @@ package barry.parser;
  */
 public enum Command {
     LIST,
+    HELP,
     TODO,
     DEADLINE,
     EVENT,

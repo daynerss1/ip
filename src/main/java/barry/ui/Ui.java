@@ -35,6 +35,25 @@ public class Ui {
     }
 
     /**
+     * Displays the in-app help page showing available commands and examples.
+     */
+    public String formatHelp() {
+        return formatWithDivider(
+                "Here are the commands you can use:",
+                "list",
+                "help",
+                "todo <description>",
+                "deadline <description> /by yyyy-MM-dd HHmm",
+                "event <description> /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm",
+                "mark <task number> [more task numbers...]",
+                "unmark <task number> [more task numbers...]",
+                "delete <task number> [more task numbers...]",
+                "find <keyword>",
+                "bye"
+        );
+    }
+
+    /**
      * Displays an error message to the user in a consistent UI format.
      *
      * @param msg The error message to display.
@@ -52,6 +71,15 @@ public class Ui {
     public String formatLoadingError(String msg) {
         assert msg != null : "loading error message must not be null";
         return formatError("Problem loading saved tasks: " + msg);
+    }
+
+    /**
+     * Displays a startup informational message.
+     *
+     * @param lines One or more lines to display.
+     */
+    public String formatStartupInfo(String... lines) {
+        return formatWithDivider(lines);
     }
 
     /**
