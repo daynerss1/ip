@@ -28,6 +28,13 @@ public class Ui {
     }
 
     /**
+     * Displays a short welcome message for first-run startup flows.
+     */
+    public String formatWelcomeShort() {
+        return formatWithDivider("Hello, I'm Barry!");
+    }
+
+    /**
      * Displays the farewell message when the user exits the program.
      */
     public String formatBye() {

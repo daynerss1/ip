@@ -29,6 +29,7 @@ public class Barry {
     private final TaskList userList;
     private final Storage storage;
     private String startupMessage = null;
+    private boolean shouldUseShortWelcome = false;
 
     /**
      * Creates a new Barry chatbot instance.
@@ -55,6 +56,7 @@ public class Barry {
             TaskList loadedTasks = new TaskList(storage.load());
             if (isFirstRun && loadedTasks.size() == 0) {
                 seedSampleTasks(loadedTasks);
+                shouldUseShortWelcome = true;
                 startupMessage = ui.formatStartupInfo(
                         SAMPLE_TASK_BOOTSTRAP_MESSAGE,
                         "Type 'help' to view all commands."
@@ -74,6 +76,9 @@ public class Barry {
      * @return The welcome message.
      */
     public String getWelcomeMessage() {
+        if (shouldUseShortWelcome) {
+            return ui.formatWelcomeShort();
+        }
         return ui.formatWelcome();
     }
 
