@@ -28,6 +28,7 @@ public class TaskList {
      * @param tasks Initial tasks to store in the list.
      */
     public TaskList(List<Task> tasks) {
+        assert tasks != null : "tasks must not be null";
         this.tasks = new ArrayList<>(tasks);
     }
 
@@ -37,6 +38,7 @@ public class TaskList {
      * @param task The task to add.
      */
     public void add(Task task) {
+        assert task != null : "task must not be null";
         tasks.add(task);
     }
 
@@ -48,6 +50,7 @@ public class TaskList {
      * @throws IndexOutOfBoundsException If index is out of range.
      */
     public Task remove(int index) {
+        assert index >= 0 && index < size() : "index out of range";
         return tasks.remove(index);
     }
 
@@ -59,6 +62,7 @@ public class TaskList {
      * @throws IndexOutOfBoundsException If index is out of range.
      */
     public Task get(int index) {
+        assert index >= 0 && index < size() : "index out of range";
         return tasks.get(index);
     }
 
