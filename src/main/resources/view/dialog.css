@@ -1,6 +1,8 @@
 /* Author note:
- * I used AI assistance to propose an initial visual system (bubble spacing, colors, and typography),
+ * AI assistance was used to propose an initial visual system (bubble spacing, colors, and typography),
  * then refined values manually to match my app's tone and readability goals.
+ * AI also helped to tune layout rules for window-resize behavior
+ * and keep compact avatars readable without wasting space.
  */
 
 /* Base chat bubble container spacing. */
@@ -39,4 +41,44 @@
     -fx-border-radius: 12;
     -fx-text-fill: #7f1d1d;
     -fx-font-weight: 700;
+}
+
+/* Resize behavior:
+ * These selectors keep the chat area and message column visually stable as window
+ * dimensions change.
+ */
+#scrollPane {
+    -fx-background: #f8fafb;
+    -fx-background-color: #f8fafb;
+    -fx-border-color: transparent;
+}
+
+#scrollPane > .viewport {
+    -fx-background-color: #f8fafb;
+}
+
+#dialogContainer {
+    -fx-padding: 8 4 8 4;
+}
+
+/* Input-row polish for responsive layout. */
+#userInput {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #ccd4dc;
+    -fx-background-color: #ffffff;
+    -fx-font-size: 12.5px;
+    -fx-padding: 0 10 0 10;
+}
+
+#sendButton {
+    -fx-background-color: #2a84b8;
+    -fx-text-fill: white;
+    -fx-background-radius: 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+#sendButton:hover {
+    -fx-background-color: #2275a3;
 }

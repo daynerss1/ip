@@ -13,18 +13,25 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 
 /**
  * Represents a dialog box consisting of an ImageView to represent the speaker's face
  * and a label containing text from the speaker.
  *
  * <p>Implementation note (author perspective):
- * I used AI assistance to rapidly iterate on the GUI structure for this class.
- * AI helped me map visual requirements (asymmetric chat layout, error highlighting,
- * and CSS-driven styling) into concrete JavaFX code, while I reviewed and kept
- * the final architecture aligned with my existing codebase.</p>
+ * AI assistance was used to rapidly iterate on the GUI structure for this class.
+ * AI helped to map visual requirements (asymmetric chat layout, error highlighting,
+ * and CSS-driven styling) into concrete JavaFX code. A reviewed was done to keep
+ * the final architecture aligned with the existing codebase.
+ *
+ * <p> AI also helped to implement two focused UX upgrades:
+ * responsive message sizing when the window is resized, and circular compact avatars
+ * that reduce visual noise while preserving speaker identity.</p>
  */
 public class DialogBox extends HBox {
+    private static final double AVATAR_SIZE = 34.0;
+    private static final double MESSAGE_HORIZONTAL_GAP = 16.0;
     private static final String STYLE_DIALOG_BOX = "dialog-box";
     private static final String STYLE_USER_DIALOG = "user-dialog";
     private static final String STYLE_BARRY_DIALOG = "barry-dialog";
@@ -52,6 +59,8 @@ public class DialogBox extends HBox {
 
         dialog.setText(text);
         displayPicture.setImage(img);
+        configureAvatar();
+        bindDialogWidthToContainer();
     }
 
     /**
@@ -79,6 +88,32 @@ public class DialogBox extends HBox {
         }
         getStyleClass().setAll(STYLE_DIALOG_BOX, STYLE_BARRY_DIALOG);
         dialog.getStyleClass().setAll(STYLE_LABEL, STYLE_DIALOG_TEXT, STYLE_BARRY_TEXT);
+    }
+
+    /**
+     * AI was used to draft this avatar treatment: keep profile images small and
+     * clip them into circles to improve focus on message content.
+     */
+    private void configureAvatar() {
+        displayPicture.setFitWidth(AVATAR_SIZE);
+        displayPicture.setFitHeight(AVATAR_SIZE);
+        displayPicture.setPreserveRatio(false);
+        displayPicture.setSmooth(true);
+
+        Circle clip = new Circle(AVATAR_SIZE / 2);
+        clip.centerXProperty().bind(displayPicture.fitWidthProperty().divide(2));
+        clip.centerYProperty().bind(displayPicture.fitHeightProperty().divide(2));
+        displayPicture.setClip(clip);
+    }
+
+    /**
+     * AI was used to shape the width-binding approach, then tuned the constants so
+     * long bot replies reflow naturally as the window width changes.
+     */
+    private void bindDialogWidthToContainer() {
+        dialog.maxWidthProperty().bind(widthProperty()
+                .subtract(displayPicture.fitWidthProperty())
+                .subtract(MESSAGE_HORIZONTAL_GAP));
     }
 
     public static DialogBox getUserDialog(String text, Image img) {
