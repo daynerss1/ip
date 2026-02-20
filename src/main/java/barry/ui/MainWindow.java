@@ -63,7 +63,7 @@ public class MainWindow extends AnchorPane {
         String response = barry.getResponse(input);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
-                DialogBox.getBarryDialog(response, barryImage)
+                DialogBox.getBarryDialog(response, barryImage, barry.wasLastResponseError())
         );
         userInput.clear();
 
