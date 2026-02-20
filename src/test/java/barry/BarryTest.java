@@ -45,4 +45,15 @@ class BarryTest {
         assertTrue(welcomeMessage.contains("Hello, I'm Barry!"));
         assertFalse(welcomeMessage.contains("What can I do for you?"));
     }
+
+    @Test
+    void getResponse_errorAndSuccess_updatesErrorState() {
+        Barry barry = new Barry(tempDir.resolve("barry-error-state.txt").toString());
+
+        barry.getResponse("bad-command");
+        assertTrue(barry.wasLastResponseError());
+
+        barry.getResponse("help");
+        assertFalse(barry.wasLastResponseError());
+    }
 }
