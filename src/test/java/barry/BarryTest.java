@@ -69,4 +69,24 @@ class BarryTest {
         assertTrue(duplicateResponse.toLowerCase().contains("duplicate task"));
         assertTrue(barry.wasLastResponseError());
     }
+
+    @Test
+    void getResponse_byeWithTrailingSpaces_exitsMessageReturned() {
+        Barry barry = new Barry(tempDir.resolve("barry-bye-spaces.txt").toString());
+
+        String response = barry.getResponse(" bye   ");
+
+        assertTrue(response.toLowerCase().contains("smooth sailing"));
+        assertFalse(barry.wasLastResponseError());
+    }
+
+    @Test
+    void getResponse_byeWithExtraText_returnsError() {
+        Barry barry = new Barry(tempDir.resolve("barry-bye-extra.txt").toString());
+
+        String response = barry.getResponse("bye x");
+
+        assertTrue(response.toLowerCase().contains("extra arguments"));
+        assertTrue(barry.wasLastResponseError());
+    }
 }

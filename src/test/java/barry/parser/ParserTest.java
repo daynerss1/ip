@@ -111,4 +111,51 @@ class ParserTest {
 
         assertEquals(Command.HELP, p.type);
     }
+
+    @Test
+    void parseBye_withLeadingAndTrailingSpaces_parsesCorrectly() throws Exception {
+        ParsedInput p = Parser.parse("   bye   ");
+
+        assertEquals(Command.BYE, p.type);
+    }
+
+    @Test
+    void parseList_withExtraArguments_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("list now"));
+
+        assertTrue(e.getMessage().toLowerCase().contains("extra arguments"));
+    }
+
+    @Test
+    void parseBye_withExtraArguments_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("bye x"));
+
+        assertTrue(e.getMessage().toLowerCase().contains("extra arguments"));
+    }
+
+    @Test
+    void parseDeadline_nonExistentDate_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("deadline impossible /by 2026-02-30 1400"));
+
+        assertTrue(e.getMessage().toLowerCase().contains("invalid date/time"));
+    }
+
+    @Test
+    void parseMark_multipleInternalSpaces_parsesCorrectly() throws Exception {
+        ParsedInput p = Parser.parse("mark   1    2");
+
+        assertEquals(Command.MARK, p.type);
+        assertArrayEquals(new int[]{1, 2}, p.taskNumbers);
+    }
+
+    @Test
+    void parseBlankInput_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("   "));
+
+        assertTrue(e.getMessage().toLowerCase().contains("empty"));
+    }
 }
