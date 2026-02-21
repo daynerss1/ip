@@ -47,13 +47,12 @@
  * dimensions change.
  */
 #scrollPane {
-    -fx-background: linear-gradient(to bottom, #e8f2f8, #f5fafc);
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
 
 #scrollPane > .viewport {
-    -fx-background-color: transparent;
+    -fx-background-color: linear-gradient(to bottom, #e8f2f8, #f5fafc);
 }
 
 #dialogContainer {
