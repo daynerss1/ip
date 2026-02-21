@@ -12,9 +12,9 @@
             fx:controller="barry.ui.MainWindow">
     <children>
         <TextField fx:id="userInput" id="userInput" onAction="#handleUserInput" prefHeight="38.0"
-                   AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="86.0" />
+                   AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="104.0" />
         <Button fx:id="sendButton" id="sendButton" mnemonicParsing="false" onAction="#handleUserInput"
-                prefHeight="38.0" prefWidth="72.0" text="Send"
+                prefHeight="38.0" prefWidth="88.0" text="Set Sail"
                 AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="8.0" />
         <ScrollPane fx:id="scrollPane" id="scrollPane" fitToWidth="true" hbarPolicy="NEVER"
                     vbarPolicy="AS_NEEDED" hvalue="1.0" vvalue="1.0"

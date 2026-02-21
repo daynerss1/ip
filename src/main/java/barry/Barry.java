@@ -24,7 +24,7 @@ import barry.ui.Ui;
  */
 public class Barry {
     private static final String SAMPLE_TASK_BOOTSTRAP_MESSAGE =
-            "Looks like this is your first run. I loaded a few sample tasks to get you started.";
+            "First voyage detected. I loaded a few sample tasks to get you started.";
     private final Ui ui;
     private final TaskList userList;
     private final Storage storage;
@@ -60,7 +60,7 @@ public class Barry {
                 shouldUseShortWelcome = true;
                 startupMessage = ui.formatStartupInfo(
                         SAMPLE_TASK_BOOTSTRAP_MESSAGE,
-                        "Type 'help' to view all commands."
+                        "Type 'help' to view all navigation commands."
                 );
             }
             return loadedTasks;
@@ -218,9 +218,9 @@ public class Barry {
 
     private void seedSampleTasks(TaskList tasks) throws BarryException {
         assert tasks != null : "tasks must not be null";
-        tasks.addTask(new ToDo("Explore the command list with 'help'"));
+        tasks.addTask(new ToDo("Learn the controls with 'help'"));
         tasks.addTask(new Deadline("Submit your first real task", LocalDateTime.of(2026, 12, 31, 18, 0)));
-        tasks.addTask(new Event("Plan your week", LocalDateTime.of(2026, 12, 20, 9, 0),
+        tasks.addTask(new Event("Plot your week", LocalDateTime.of(2026, 12, 20, 9, 0),
                 LocalDateTime.of(2026, 12, 20, 10, 0)));
         storage.save(tasks);
     }
