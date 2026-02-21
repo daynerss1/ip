@@ -53,7 +53,7 @@ test {
 }
 
 application {
-    mainClass.set("barry.main.Main")
+    mainClass.set("barry.main.Launcher")
 }
 
 shadowJar {
