@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class TaskDetailsTest {
 
     @Test
-    void todo_sameName_hasSameDetails_true() {
+    void todo_sameNameAndHasSameDetails_true() {
         Task a = new ToDo("read");
         Task b = new ToDo("read");
         b.mark();
@@ -25,7 +25,7 @@ class TaskDetailsTest {
     }
 
     @Test
-    void deadline_differentDate_hasSameDetails_false() {
+    void deadline_differentDateAndHasSameDetails_false() {
         Task a = new Deadline("submit", LocalDateTime.of(2026, 2, 1, 10, 0));
         Task b = new Deadline("submit", LocalDateTime.of(2026, 2, 2, 10, 0));
 
@@ -33,7 +33,7 @@ class TaskDetailsTest {
     }
 
     @Test
-    void event_sameFields_hasSameDetails_true() {
+    void event_sameFieldsAndHasSameDetails_true() {
         Task a = new Event("meeting", LocalDateTime.of(2026, 2, 1, 10, 0),
                 LocalDateTime.of(2026, 2, 1, 12, 0));
         Task b = new Event("meeting", LocalDateTime.of(2026, 2, 1, 10, 0),
@@ -43,7 +43,7 @@ class TaskDetailsTest {
     }
 
     @Test
-    void differentTaskTypes_sameName_hasSameDetails_false() {
+    void differentTaskTypes_sameNameAndHasSameDetails_false() {
         Task todo = new ToDo("plan");
         Task deadline = new Deadline("plan", LocalDateTime.of(2026, 2, 1, 10, 0));
 
