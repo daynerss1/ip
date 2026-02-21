@@ -7,39 +7,38 @@
 
 /* Base chat bubble container spacing. */
 .dialog-box {
-    -fx-padding: 6 10 6 10;
+    -fx-padding: 4 8 4 8;
 }
 
 /* Shared message text style for both user and bot bubbles. */
 .dialog-text {
-    -fx-background-radius: 12;
-    -fx-padding: 8 12 8 12;
-    -fx-font-size: 13px;
-    -fx-text-fill: #1f2933;
+    -fx-background-radius: 11;
+    -fx-border-radius: 11;
+    -fx-padding: 7 10 7 10;
+    -fx-font-family: "Gill Sans MT", "Trebuchet MS", sans-serif;
+    -fx-font-size: 12.5px;
+    -fx-text-fill: #12222f;
 }
 
 /* User message bubble styling. */
 .user-text {
-    -fx-background-color: #dbeafe;
-    -fx-border-color: #93c5fd;
-    -fx-border-radius: 12;
+    -fx-background-color: #d6f2f7;
+    -fx-border-color: #7fb7c3;
 }
 
 /* Normal bot message bubble styling. */
 .barry-text {
-    -fx-background-color: #f3f4f6;
-    -fx-border-color: #d1d5db;
-    -fx-border-radius: 12;
+    -fx-background-color: #eef3f7;
+    -fx-border-color: #c8d3dc;
 }
 
 /* Error bubble styling:
  * AI helped me land on a higher-contrast red palette so command errors are immediately noticeable.
  */
 .barry-error-text {
-    -fx-background-color: #fee2e2;
-    -fx-border-color: #ef4444;
-    -fx-border-radius: 12;
-    -fx-text-fill: #7f1d1d;
+    -fx-background-color: #ffe7e5;
+    -fx-border-color: #d85f54;
+    -fx-text-fill: #7c211b;
     -fx-font-weight: 700;
 }
 
@@ -48,13 +47,13 @@
  * dimensions change.
  */
 #scrollPane {
-    -fx-background: #f8fafb;
-    -fx-background-color: #f8fafb;
+    -fx-background: linear-gradient(to bottom, #e8f2f8, #f5fafc);
+    -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
 
 #scrollPane > .viewport {
-    -fx-background-color: #f8fafb;
+    -fx-background-color: transparent;
 }
 
 #dialogContainer {
@@ -63,22 +62,24 @@
 
 /* Input-row polish for responsive layout. */
 #userInput {
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-color: #ccd4dc;
-    -fx-background-color: #ffffff;
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
+    -fx-border-color: #a8becd;
+    -fx-background-color: #fbfdff;
+    -fx-font-family: "Gill Sans MT", "Trebuchet MS", sans-serif;
     -fx-font-size: 12.5px;
     -fx-padding: 0 10 0 10;
 }
 
 #sendButton {
-    -fx-background-color: #2a84b8;
+    -fx-background-color: linear-gradient(to bottom, #1f7aa8, #1b698f);
     -fx-text-fill: white;
-    -fx-background-radius: 10;
-    -fx-font-size: 12px;
+    -fx-background-radius: 9;
+    -fx-font-family: "Gill Sans MT", "Trebuchet MS", sans-serif;
+    -fx-font-size: 12.5px;
     -fx-font-weight: 600;
 }
 
 #sendButton:hover {
-    -fx-background-color: #2275a3;
+    -fx-background-color: linear-gradient(to bottom, #236f97, #1a5e80);
 }

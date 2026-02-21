@@ -14,16 +14,15 @@ import barry.task.TaskList;
  * (e.g., welcome text, task lists, confirmations, and error messages) in a consistent format.</p>
  */
 public class Ui {
-    private static final String DIVIDER = "____________________________________________________________";
     private static final String LINE_SEPARATOR = System.lineSeparator();
 
     /**
      * Displays the welcome message at the start of the program.
      */
     public String formatWelcome() {
-        return formatWithDivider(
-                "Hello! I'm Barry.",
-                "What can I do for you?"
+        return formatLines(
+                "Ahoy, I'm Captain Barry.",
+                "Tell me what to chart next."
         );
     }
 
@@ -31,22 +30,22 @@ public class Ui {
      * Displays a short welcome message for first-run startup flows.
      */
     public String formatWelcomeShort() {
-        return formatWithDivider("Hello, I'm Barry!");
+        return formatLines("Ahoy, I'm Captain Barry.");
     }
 
     /**
      * Displays the farewell message when the user exits the program.
      */
     public String formatBye() {
-        return formatWithDivider("Bye. Hope to see you again soon!");
+        return formatLines("Smooth sailing. See you at the next port.");
     }
 
     /**
      * Displays the in-app help page showing available commands and examples.
      */
     public String formatHelp() {
-        return formatWithDivider(
-                "Here are the commands you can use:",
+        return formatLines(
+                "Navigation commands:",
                 "list",
                 "help",
                 "todo <description>",
@@ -67,7 +66,7 @@ public class Ui {
      */
     public String formatError(String msg) {
         assert msg != null : "error message must not be null";
-        return formatWithDivider(msg);
+        return formatLines("Storm warning: " + msg);
     }
 
     /**
@@ -86,7 +85,7 @@ public class Ui {
      * @param lines One or more lines to display.
      */
     public String formatStartupInfo(String... lines) {
-        return formatWithDivider(lines);
+        return formatLines(lines);
     }
 
     /**
@@ -97,10 +96,10 @@ public class Ui {
      */
     public String formatTaskAdded(Task task, int size) {
         assert task != null : "task must not be null";
-        return formatWithDivider(
-                "Got it. I've added this task:",
+        return formatLines(
+                "Aye, I've logged this task:",
                 task.toString(),
-                "Now you have " + size + " tasks in the list."
+                "You now have " + size + " tasks on the chart."
         );
     }
 
@@ -115,8 +114,8 @@ public class Ui {
         String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
 
         return formatMultipleTasksWithSummary(
-                "Noted. I've removed " + modifier + " :",
-                "Now you have " + size + " tasks in the list.",
+                "Aye, I've removed " + modifier + ":",
+                "You now have " + size + " tasks on the chart.",
                 tasks
         );
     }
@@ -131,7 +130,7 @@ public class Ui {
         String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
 
         return formatMultipleTasks(
-                "Nice! I've marked " + modifier + " as done:",
+                "Marked " + modifier + " as complete:",
                 tasks
         );
     }
@@ -146,7 +145,7 @@ public class Ui {
         String modifier = (tasks.size() > 1) ? "these tasks" : "this task";
 
         return formatMultipleTasks(
-                "OK, I've marked " + modifier + " as not done yet:",
+                "Reopened " + modifier + ":",
                 tasks
         );
     }
@@ -159,16 +158,14 @@ public class Ui {
     public String formatTaskList(TaskList tasks) {
         assert tasks != null : "tasks must not be null";
         StringBuilder sb = new StringBuilder();
-        sb.append(DIVIDER).append(LINE_SEPARATOR);
 
         if (tasks.size() == 0) {
-            sb.append("Your task list is currently empty.").append(LINE_SEPARATOR);
+            sb.append("Your chart is clear.").append(LINE_SEPARATOR);
         } else {
-            sb.append("Here are the tasks in your list:").append(LINE_SEPARATOR);
+            sb.append("Current charted tasks:").append(LINE_SEPARATOR);
             appendTaskList(sb, tasks);
         }
-        sb.append(DIVIDER);
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     /**
@@ -179,16 +176,13 @@ public class Ui {
     public String formatFindResults(List<TaskList.IndexedTask> matches) {
         assert matches != null : "matches must not be null";
         if (matches.isEmpty()) {
-            return formatWithDivider("No matching tasks found.");
+            return formatLines("No matching tasks on the chart.");
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(DIVIDER).append(LINE_SEPARATOR);
-        sb.append("Here are the matching tasks in your list:").append(LINE_SEPARATOR);
+        sb.append("Matching charted tasks:").append(LINE_SEPARATOR);
         appendMatches(sb, matches);
-
-        sb.append(DIVIDER);
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     private void appendTaskList(StringBuilder sb, TaskList tasks) {
@@ -213,11 +207,9 @@ public class Ui {
         assert header != null : "header must not be null";
         assert tasks != null : "tasks must not be null";
         StringBuilder sb = new StringBuilder();
-        sb.append(DIVIDER).append(LINE_SEPARATOR);
         sb.append(header).append(LINE_SEPARATOR);
         appendTasks(sb, tasks);
-        sb.append(DIVIDER);
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     private String formatMultipleTasksWithSummary(String header, String summary, List<Task> tasks) {
@@ -225,12 +217,10 @@ public class Ui {
         assert summary != null : "summary must not be null";
         assert tasks != null : "tasks must not be null";
         StringBuilder sb = new StringBuilder();
-        sb.append(DIVIDER).append(LINE_SEPARATOR);
         sb.append(header).append(LINE_SEPARATOR);
         appendTasks(sb, tasks);
         sb.append(summary).append(LINE_SEPARATOR);
-        sb.append(DIVIDER);
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     private void appendTasks(StringBuilder sb, List<Task> tasks) {
@@ -242,14 +232,12 @@ public class Ui {
         sb.append(body);
     }
 
-    private String formatWithDivider(String... lines) {
+    private String formatLines(String... lines) {
         assert lines != null : "lines must not be null";
         StringBuilder sb = new StringBuilder();
-        sb.append(DIVIDER).append(LINE_SEPARATOR);
         for (String line : lines) {
             sb.append(line).append(LINE_SEPARATOR);
         }
-        sb.append(DIVIDER);
-        return sb.toString();
+        return sb.toString().trim();
     }
 }

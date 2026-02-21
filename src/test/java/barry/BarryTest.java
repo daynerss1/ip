@@ -20,9 +20,10 @@ class BarryTest {
 
         String response = barry.getResponse("help");
 
-        assertTrue(response.contains("Here are the commands you can use:"));
+        assertTrue(response.contains("Navigation commands:"));
         assertTrue(response.contains("todo <description>"));
         assertTrue(response.contains("find <keyword>"));
+        assertFalse(response.contains("___"));
     }
 
     @Test
@@ -32,8 +33,8 @@ class BarryTest {
         String startupMessage = barry.consumeStartupMessage();
 
         assertNotNull(startupMessage);
-        assertTrue(startupMessage.contains("first run"));
-        assertTrue(startupMessage.contains("Type 'help' to view all commands."));
+        assertTrue(startupMessage.contains("First voyage"));
+        assertTrue(startupMessage.contains("Type 'help' to view all navigation commands."));
     }
 
     @Test
@@ -42,7 +43,7 @@ class BarryTest {
 
         String welcomeMessage = barry.getWelcomeMessage();
 
-        assertTrue(welcomeMessage.contains("Hello, I'm Barry!"));
+        assertTrue(welcomeMessage.contains("Ahoy, I'm Captain Barry."));
         assertFalse(welcomeMessage.contains("What can I do for you?"));
     }
 
