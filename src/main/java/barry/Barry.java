@@ -25,6 +25,8 @@ import barry.ui.Ui;
 public class Barry {
     private static final String SAMPLE_TASK_BOOTSTRAP_MESSAGE =
             "First voyage detected. I loaded a few sample tasks to get you started.";
+    private static final String ERROR_DUPLICATE_TASK =
+            "Duplicate task detected. This task already exists in your list.";
     private final Ui ui;
     private final TaskList userList;
     private final Storage storage;
@@ -207,6 +209,7 @@ public class Barry {
     }
 
     private String addTaskAndRespond(Task task) throws BarryException {
+        ensureTaskIsUnique(task);
         userList.addTask(task);
         saveTasks();
         return ui.formatTaskAdded(task, userList.size());
@@ -214,6 +217,16 @@ public class Barry {
 
     private void saveTasks() throws BarryException {
         storage.save(userList);
+    }
+
+    private void ensureTaskIsUnique(Task newTask) throws BarryException {
+        assert newTask != null : "new task must not be null";
+        for (int i = 0; i < userList.size(); i++) {
+            Task existingTask = userList.getTask(i);
+            if (existingTask.hasSameDetails(newTask)) {
+                throw new BarryException(ERROR_DUPLICATE_TASK);
+            }
+        }
     }
 
     private void seedSampleTasks(TaskList tasks) throws BarryException {

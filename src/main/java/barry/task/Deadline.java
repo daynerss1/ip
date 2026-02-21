@@ -33,6 +33,14 @@ public class Deadline extends Task {
     }
 
     @Override
+    public boolean hasSameDetails(Task other) {
+        if (!(other instanceof Deadline otherDeadline)) {
+            return false;
+        }
+        return super.hasSameDetails(other) && deadline.equals(otherDeadline.deadline);
+    }
+
+    @Override
     public String toString() {
         return TASK_TYPE_ICON + super.toString()
                 + LABEL_BY_PREFIX + formatDeadline(deadline) + LABEL_END;

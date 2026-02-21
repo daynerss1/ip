@@ -3,6 +3,9 @@ package barry.parser;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.util.HashSet;
+import java.util.Set;
 
 import barry.exception.BarryException;
 
@@ -14,18 +17,20 @@ import barry.exception.BarryException;
  * {@code /from}, {@code /to}, and date/time formats).
  */
 public class Parser {
-    private static final String INPUT_DATE_PATTERN = "yyyy-MM-dd HHmm";
+    private static final String INPUT_DATE_PATTERN = "uuuu-MM-dd HHmm";
     private static final DateTimeFormatter IN_DATE_FORMAT =
-            DateTimeFormatter.ofPattern(INPUT_DATE_PATTERN);
+            DateTimeFormatter.ofPattern(INPUT_DATE_PATTERN).withResolverStyle(ResolverStyle.STRICT);
     private static final String ERROR_EMPTY_INPUT = "Input command cannot be empty.";
     private static final String ERROR_INVALID_COMMAND = "Invalid command: Use 'todo', 'deadline', 'event', 'list', "
             + "'mark', 'unmark', 'delete', 'find', 'help', or 'bye'";
+    private static final String ERROR_EXTRA_ARGUMENTS = "This command does not accept extra arguments.";
     private static final String ERROR_TODO_EMPTY = "Oops! The description of a ToDo cannot be empty.";
     private static final String ERROR_DEADLINE_EMPTY = "Oops! The description of a Deadline cannot be empty.";
     private static final String ERROR_DEADLINE_MISSING_BY = "You need to input a date for the deadline of this task! "
             + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.";
     private static final String ERROR_DEADLINE_BY_EMPTY = "The Deadline's date/time cannot be empty. "
             + "Specify one by appending '/by yyyy-MM-dd HHmm' to the Deadline.";
+    private static final String ERROR_DEADLINE_MULTIPLE_BY = "Deadline accepts exactly one '/by' flag.";
     private static final String ERROR_EVENT_EMPTY = "Oops! The description of an Event cannot be empty.";
     private static final String ERROR_EVENT_MISSING_FROM = "An event needs a starting time! "
             + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.";
@@ -35,10 +40,14 @@ public class Parser {
             + "Specify one by appending '/from yyyy-MM-dd HHmm' to the Event.";
     private static final String ERROR_EVENT_END_EMPTY = "End time cannot be empty! "
             + "Specify one by appending '/to yyyy-MM-dd HHmm' to the Event.";
-    private static final String ERROR_EVENT_END_BEFORE_START =
-            "Event's end time cannot be before its start time!";
+    private static final String ERROR_EVENT_MULTIPLE_FROM = "Event accepts exactly one '/from' flag.";
+    private static final String ERROR_EVENT_MULTIPLE_TO = "Event accepts exactly one '/to' flag.";
+    private static final String ERROR_EVENT_END_NOT_AFTER_START =
+            "Event's end time must be later than its start time.";
     private static final String ERROR_NUMBERS_REQUIRED = "You must specify at least one task number.";
     private static final String ERROR_NUMBERS_NOT_INTEGER = "Task numbers must be integers.";
+    private static final String ERROR_NUMBERS_NON_POSITIVE = "Task numbers must be positive integers.";
+    private static final String ERROR_NUMBERS_DUPLICATE = "Duplicate task numbers are not allowed.";
     private static final String ERROR_FIND_EMPTY = "Find what? Please provide a keyword.";
     private static final String ERROR_INVALID_DATE_TIME =
             "Invalid date/time. Use yyyy-MM-dd HHmm (e.g., 2026-01-30 1400).";
@@ -57,8 +66,9 @@ public class Parser {
      */
     public static ParsedInput parse(String input) throws BarryException {
         ensureInputIsNotBlank(input);
-        Command type = parseCommandWord(input);
-        return parseByCommand(type, input);
+        String normalizedInput = input.trim();
+        Command type = parseCommandWord(normalizedInput);
+        return parseByCommand(type, normalizedInput);
     }
 
     private static void ensureInputIsNotBlank(String input) throws BarryException {
@@ -101,8 +111,13 @@ public class Parser {
     private static ParsedInput parseByCommand(Command type, String input) throws BarryException {
         switch (type) {
         case LIST:
+            ensureNoExtraArguments(input, "list");
+            return ParsedInput.simple(type);
         case HELP:
+            ensureNoExtraArguments(input, "help");
+            return ParsedInput.simple(type);
         case BYE: // Intentional fallthrough as LIST, HELP, and BYE require no arguments
+            ensureNoExtraArguments(input, "bye");
             return ParsedInput.simple(type);
         case TODO:
             return parseTodo(input);
@@ -133,6 +148,7 @@ public class Parser {
         String remainder = extractRemainderAfterCommand(input, "deadline");
         assert remainder != null : "deadline remaining details must not be null";
         ensureNotEmpty(remainder, ERROR_DEADLINE_EMPTY);
+        ensureSingleFlagOccurrence(remainder, "/by", ERROR_DEADLINE_MULTIPLE_BY);
 
         String[] parts = splitOnFlagOrThrow(remainder, "/by", ERROR_DEADLINE_MISSING_BY);
         String name = parts[0].trim();
@@ -151,6 +167,8 @@ public class Parser {
         String remainder = extractRemainderAfterCommand(input, "event");
         assert remainder != null : "event remaining details must not be null";
         ensureNotEmpty(remainder, ERROR_EVENT_EMPTY);
+        ensureSingleFlagOccurrence(remainder, "/from", ERROR_EVENT_MULTIPLE_FROM);
+        ensureSingleFlagOccurrence(remainder, "/to", ERROR_EVENT_MULTIPLE_TO);
 
         String[] parts = splitOnFlagOrThrow(remainder, "/from", ERROR_EVENT_MISSING_FROM);
         String name = parts[0].trim();
@@ -168,8 +186,8 @@ public class Parser {
 
         LocalDateTime start = parseDateTime(startString);
         LocalDateTime end = parseDateTime(endString);
-        if (end.isBefore(start)) {
-            throw new BarryException(ERROR_EVENT_END_BEFORE_START);
+        if (!end.isAfter(start)) {
+            throw new BarryException(ERROR_EVENT_END_NOT_AFTER_START);
         }
 
         return ParsedInput.event(name, start, end);
@@ -181,8 +199,16 @@ public class Parser {
             throw new BarryException(ERROR_NUMBERS_REQUIRED);
         }
         int[] nums = new int[tokens.length - 1];
+        Set<Integer> seen = new HashSet<>();
         for (int i = 1; i < tokens.length; i++) {
-            nums[i - 1] = parseTaskNumber(tokens[i]);
+            int parsedNumber = parseTaskNumber(tokens[i]);
+            if (parsedNumber <= 0) {
+                throw new BarryException(ERROR_NUMBERS_NON_POSITIVE);
+            }
+            if (!seen.add(parsedNumber)) {
+                throw new BarryException(ERROR_NUMBERS_DUPLICATE);
+            }
+            nums[i - 1] = parsedNumber;
         }
 
         return ParsedInput.numbers(type, nums);
@@ -220,9 +246,37 @@ public class Parser {
         return parts;
     }
 
+    private static void ensureSingleFlagOccurrence(
+            String input, String flag, String errorMessage) throws BarryException {
+        if (countOccurrences(input, flag) > 1) {
+            throw new BarryException(errorMessage);
+        }
+    }
+
+    private static int countOccurrences(String text, String target) {
+        int count = 0;
+        int fromIndex = 0;
+        while (true) {
+            int foundIndex = text.indexOf(target, fromIndex);
+            if (foundIndex < 0) {
+                break;
+            }
+            count++;
+            fromIndex = foundIndex + target.length();
+        }
+        return count;
+    }
+
     private static void ensureNotEmpty(String value, String errorMessage) throws BarryException {
         if (value == null || value.isEmpty()) {
             throw new BarryException(errorMessage);
+        }
+    }
+
+    private static void ensureNoExtraArguments(
+            String input, String commandWord) throws BarryException {
+        if (!input.equalsIgnoreCase(commandWord)) {
+            throw new BarryException(ERROR_EXTRA_ARGUMENTS);
         }
     }
 

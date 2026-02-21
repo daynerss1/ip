@@ -40,6 +40,21 @@ public abstract class Task {
         return this.name;
     }
 
+    /**
+     * Returns whether another task has the same task details as this task.
+     * Task details include task type and task-specific content.
+     *
+     * @param other task to compare against.
+     * @return true if both tasks represent the same details.
+     */
+    public boolean hasSameDetails(Task other) {
+        if (other == null) {
+            return false;
+        }
+        return this.getClass().equals(other.getClass())
+                && this.getName().equals(other.getName());
+    }
+
     @Override
     public String toString() {
         String completion = this.done ? DONE_MARK : UNDONE_MARK;

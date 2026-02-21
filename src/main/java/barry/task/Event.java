@@ -43,6 +43,16 @@ public class Event extends Task {
     }
 
     @Override
+    public boolean hasSameDetails(Task other) {
+        if (!(other instanceof Event otherEvent)) {
+            return false;
+        }
+        return super.hasSameDetails(other)
+                && start.equals(otherEvent.start)
+                && end.equals(otherEvent.end);
+    }
+
+    @Override
     public String toString() {
         return TASK_TYPE_ICON + super.toString()
                 + LABEL_FROM_PREFIX + formatEventTime(start)

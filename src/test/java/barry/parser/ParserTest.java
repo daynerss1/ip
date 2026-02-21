@@ -38,7 +38,15 @@ class ParserTest {
         BarryException e = assertThrows(BarryException.class, () -> Parser
                 .parse("event meeting /from 2026-01-30 1600 /to 2026-01-30 1500"));
 
-        assertTrue(e.getMessage().toLowerCase().contains("before"));
+        assertTrue(e.getMessage().toLowerCase().contains("later"));
+    }
+
+    @Test
+    void parseEvent_sameStartAndEnd_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("event standup /from 2026-01-30 1600 /to 2026-01-30 1600"));
+
+        assertTrue(e.getMessage().toLowerCase().contains("later"));
     }
 
     @Test
@@ -55,6 +63,46 @@ class ParserTest {
                 .parse("mark a"));
 
         assertTrue(e.getMessage().toLowerCase().contains("integer"));
+    }
+
+    @Test
+    void parseMark_duplicateTaskNumbers_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("mark 1 1"));
+
+        assertTrue(e.getMessage().toLowerCase().contains("duplicate"));
+    }
+
+    @Test
+    void parseMark_nonPositiveTaskNumber_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("mark 0"));
+
+        assertTrue(e.getMessage().toLowerCase().contains("positive"));
+    }
+
+    @Test
+    void parseDeadline_multipleByFlags_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("deadline submit report /by 2026-01-30 1600 /by 2026-01-31 1600"));
+
+        assertTrue(e.getMessage().contains("exactly one '/by'"));
+    }
+
+    @Test
+    void parseEvent_multipleFromFlags_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("event demo /from 2026-01-30 1600 /from 2026-01-30 1700 /to 2026-01-30 1800"));
+
+        assertTrue(e.getMessage().contains("exactly one '/from'"));
+    }
+
+    @Test
+    void parseEvent_multipleToFlags_throwsBarryException() {
+        BarryException e = assertThrows(BarryException.class, () -> Parser
+                .parse("event demo /from 2026-01-30 1600 /to 2026-01-30 1700 /to 2026-01-30 1800"));
+
+        assertTrue(e.getMessage().contains("exactly one '/to'"));
     }
 
     @Test
