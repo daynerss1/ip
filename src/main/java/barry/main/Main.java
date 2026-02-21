@@ -24,6 +24,7 @@ public class Main extends Application {
             AnchorPane ap = fxmlLoader.load();
             Scene scene = new Scene(ap);
             stage.setScene(scene);
+            stage.setTitle("Captain Barry");
             stage.setResizable(true);
             stage.setMinWidth(360);
             stage.setMinHeight(500);
