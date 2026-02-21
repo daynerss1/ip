@@ -3,6 +3,7 @@ package barry.parser;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,12 +17,13 @@ import barry.exception.BarryException;
  * {@code /from}, {@code /to}, and date/time formats).
  */
 public class Parser {
-    private static final String INPUT_DATE_PATTERN = "yyyy-MM-dd HHmm";
+    private static final String INPUT_DATE_PATTERN = "uuuu-MM-dd HHmm";
     private static final DateTimeFormatter IN_DATE_FORMAT =
-            DateTimeFormatter.ofPattern(INPUT_DATE_PATTERN);
+            DateTimeFormatter.ofPattern(INPUT_DATE_PATTERN).withResolverStyle(ResolverStyle.STRICT);
     private static final String ERROR_EMPTY_INPUT = "Input command cannot be empty.";
     private static final String ERROR_INVALID_COMMAND = "Invalid command: Use 'todo', 'deadline', 'event', 'list', "
             + "'mark', 'unmark', 'delete', 'find', 'help', or 'bye'";
+    private static final String ERROR_EXTRA_ARGUMENTS = "This command does not accept extra arguments.";
     private static final String ERROR_TODO_EMPTY = "Oops! The description of a ToDo cannot be empty.";
     private static final String ERROR_DEADLINE_EMPTY = "Oops! The description of a Deadline cannot be empty.";
     private static final String ERROR_DEADLINE_MISSING_BY = "You need to input a date for the deadline of this task! "
@@ -64,8 +66,9 @@ public class Parser {
      */
     public static ParsedInput parse(String input) throws BarryException {
         ensureInputIsNotBlank(input);
-        Command type = parseCommandWord(input);
-        return parseByCommand(type, input);
+        String normalizedInput = input.trim();
+        Command type = parseCommandWord(normalizedInput);
+        return parseByCommand(type, normalizedInput);
     }
 
     private static void ensureInputIsNotBlank(String input) throws BarryException {
@@ -108,8 +111,13 @@ public class Parser {
     private static ParsedInput parseByCommand(Command type, String input) throws BarryException {
         switch (type) {
         case LIST:
+            ensureNoExtraArguments(input, "list");
+            return ParsedInput.simple(type);
         case HELP:
+            ensureNoExtraArguments(input, "help");
+            return ParsedInput.simple(type);
         case BYE: // Intentional fallthrough as LIST, HELP, and BYE require no arguments
+            ensureNoExtraArguments(input, "bye");
             return ParsedInput.simple(type);
         case TODO:
             return parseTodo(input);
@@ -238,7 +246,8 @@ public class Parser {
         return parts;
     }
 
-    private static void ensureSingleFlagOccurrence(String input, String flag, String errorMessage) throws BarryException {
+    private static void ensureSingleFlagOccurrence(
+            String input, String flag, String errorMessage) throws BarryException {
         if (countOccurrences(input, flag) > 1) {
             throw new BarryException(errorMessage);
         }
@@ -261,6 +270,13 @@ public class Parser {
     private static void ensureNotEmpty(String value, String errorMessage) throws BarryException {
         if (value == null || value.isEmpty()) {
             throw new BarryException(errorMessage);
+        }
+    }
+
+    private static void ensureNoExtraArguments(
+            String input, String commandWord) throws BarryException {
+        if (!input.equalsIgnoreCase(commandWord)) {
+            throw new BarryException(ERROR_EXTRA_ARGUMENTS);
         }
     }
 
