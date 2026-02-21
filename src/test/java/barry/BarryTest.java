@@ -57,4 +57,16 @@ class BarryTest {
         barry.getResponse("help");
         assertFalse(barry.wasLastResponseError());
     }
+
+    @Test
+    void getResponse_duplicateTask_returnsError() {
+        Barry barry = new Barry(tempDir.resolve("barry-duplicate-task.txt").toString());
+
+        String firstResponse = barry.getResponse("todo read book");
+        String duplicateResponse = barry.getResponse("todo read book");
+
+        assertTrue(firstResponse.toLowerCase().contains("logged"));
+        assertTrue(duplicateResponse.toLowerCase().contains("duplicate task"));
+        assertTrue(barry.wasLastResponseError());
+    }
 }
